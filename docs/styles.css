@@ -71,6 +71,20 @@ code, .mono { font-family: 'IBM Plex Mono', ui-monospace, 'Cascadia Code', Conso
 #nav a:hover { color: var(--text); background: var(--bg-elev-2); }
 #nav a.active { color: white; background: var(--cat-blue); }
 
+.tray-status {
+  margin-left: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.4px;
+  padding: 4px 9px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  cursor: help;
+  user-select: none;
+}
+.tray-status.live   { color: var(--cat-green); border-color: rgba(120, 200, 120, 0.4); background: rgba(120, 200, 120, 0.08); }
+.tray-status.static { color: var(--text-faint); }
+
 .kbd-hint {
   margin-left: 8px;
   width: 28px; height: 28px;

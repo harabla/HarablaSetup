@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=10" />
+  <link rel="stylesheet" href="styles.css?v=11" />
   <script>
     // Stash the initial hash for app.js, then strip it so the browser does not
     // anchor-scroll the section heading under the sticky topbar on first load.
@@ -34,6 +34,7 @@
     <a href="#pcsetup" data-section="pcsetup">PC Setup</a>
     <a href="#setup" data-section="setup">Setup</a>
   </nav>
+  <span id="tray-status" class="tray-status static" title="Tray not running — running state from localStorage (design mode)">○ Static</span>
   <button id="shortcut-toggle" class="kbd-hint" aria-label="Show keyboard shortcuts" title="Keyboard shortcuts (?)">?</button>
 </header>
 
@@ -1389,6 +1390,6 @@ Write-Host "[report] generated: $LogDir\report.html" -ForegroundColor Cyan</pre>
 }
 </script>
 
-<script src="app.js?v=20"></script>
+<script src="app.js?v=21"></script>
 </body>
 </html>

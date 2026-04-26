@@ -41,11 +41,13 @@ const data = {
   meta:      readJSON('data-meta'),
 };
 
-// ---------- App running-state (mocked for the demo) ----------
-// Stream Deck's Advanced Launcher plugin tracks real OS process state. The
-// page can't, so we mock it: clicking a launcher cell or pre-flight pill
-// toggles a per-app boolean. Persisted in localStorage so the demo keeps its
-// state across reloads. Same `app` name everywhere = one shared status.
+// ---------- App running-state ----------
+// Two sources, in priority order:
+//   1. Live data from the tray's /api/state endpoint (when the Go tray is
+//      running on the same host). Real OS process names from Get-Process.
+//   2. localStorage mock — clicking a launcher cell or pre-flight pill
+//      toggles a per-app boolean, persisted across reloads. Used for design
+//      preview when the tray isn't running.
 const RUNNING_KEY = 'gaming-ref:running';
 function loadRunning() {
   try { return JSON.parse(localStorage.getItem(RUNNING_KEY)) || {}; } catch (_) { return {}; }
@@ -54,17 +56,100 @@ function saveRunning(state) {
   try { localStorage.setItem(RUNNING_KEY, JSON.stringify(state)); } catch (_) {}
 }
 const running = loadRunning();
-function isRunning(app) { return !!running[app]; }
+
+// Live state populated by probeTray() — null until first successful fetch.
+const live = { processes: null, displays: null, vjoy: null, health: null, connected: false };
+
+// Map a friendly preflight/launcher name (e.g. "iRacing", "Crew Chief") to
+// process-name substrings the live API might return. Lowercased + spaces
+// stripped match against any process name reported by the tray.
+function processMatches(appName) {
+  if (!live.processes) return false;
+  const norm = s => (s || '').toLowerCase().replace(/[\s_-]/g, '');
+  const target = norm(appName);
+  // Hand-tuned aliases for apps whose process name doesn't contain the friendly name
+  const aliases = {
+    'iracing':         ['iracingsim64dx11', 'iracingui'],
+    'crewchief':       ['crewchief', 'crewchiefv4'],
+    'simhub':          ['simhub', 'simhubwpf'],
+    'tradingpaints':   ['tradingpaints'],
+    'fanalab':         ['fanalab'],
+    'joystickgremlin': ['joystickgremlin', 'joystick_gremlin'],
+    'vjoy':            ['vjoyconf'],          // vJoy itself is a driver, no process; vJoyConf is the GUI
+    'hidhide':         ['hidhideclient', 'hidhide'],
+    'soundvolumeview': ['soundvolumeview'],
+    'virtualdesktop':  ['virtualdesktop', 'vdstreamerservice'],
+    'irffb2022':       ['irffb', 'irffb2022'],
+    'hwinfo64':        ['hwinfo64'],
+    'spotify':         ['spotify'],
+    'obsstudio':       ['obs64', 'obs32'],
+    'discord':         ['discord'],
+    'icue':            ['icue'],
+    'steelseriesgg':   ['steelseries', 'sssgame'],
+  };
+  const candidates = aliases[target] || [target];
+  return live.processes.some(p => {
+    const np = norm(p.name);
+    return candidates.some(c => np.includes(c));
+  });
+}
+
+function isRunning(app) {
+  if (live.connected) return processMatches(app);
+  return !!running[app];
+}
 function toggleRunning(app) {
+  if (live.connected) return; // live data — no manual toggle
   running[app] = !running[app];
   saveRunning(running);
-  // Re-render every surface that depends on running-state.
+  rerenderRunningSurfaces();
+}
+function rerenderRunningSurfaces() {
   $$('.streamdeck').forEach(el => {
     const key = el.dataset.grid.replace('streamdeck-', '');
     if (data[key]) renderStreamdeck(el, data[key]);
   });
   renderAllPreflight();
 }
+
+// Probe the tray API every 10s. Single-shot first, then start the loop.
+async function probeTray() {
+  try {
+    const r = await fetch('/api/state', { cache: 'no-store' });
+    if (!r.ok) throw new Error('tray returned ' + r.status);
+    const s = await r.json();
+    live.processes = s.processes;
+    live.displays  = s.displays;
+    live.vjoy      = s.vjoy;
+    live.health    = s.health;
+    if (!live.connected) {
+      live.connected = true;
+      updateLiveBadge(true);
+    }
+    rerenderRunningSurfaces();
+  } catch (e) {
+    if (live.connected) {
+      live.connected = false;
+      updateLiveBadge(false);
+      rerenderRunningSurfaces();
+    }
+  }
+}
+function updateLiveBadge(on) {
+  const el = $('#tray-status');
+  if (!el) return;
+  el.classList.toggle('live', on);
+  el.classList.toggle('static', !on);
+  el.title = on
+    ? 'Tray connected — running state from live processes'
+    : 'Tray not running — running state from localStorage (design mode)';
+  el.textContent = on ? '● Live' : '○ Static';
+}
+// Boot: try once immediately; poll every 10s thereafter.
+window.addEventListener('DOMContentLoaded', () => {
+  probeTray();
+  setInterval(probeTray, 10_000);
+});
 
 function readJSON(id) {
   const el = document.getElementById(id);
