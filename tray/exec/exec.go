@@ -4,11 +4,15 @@
 package exec
 
 import (
+	"encoding/json"
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/hkbla/streamdeck-config/tray/config"
+	"github.com/hkbla/streamdeck-config/tray/probe"
 )
 
 // Result — outcome of a dispatched action. Status is "ok" or "error".
@@ -125,10 +129,37 @@ func (d *Dispatcher) runScript(name string) Result {
 	if runtime.GOOS != "windows" {
 		return Result{Status: "ok", Detail: fmt.Sprintf("[mock] would run scripts/%s", name)}
 	}
+	scriptPath := filepath.Join("scripts", name)
 	out, err := exec.Command("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass",
-		"-File", "scripts/"+name).CombinedOutput()
+		"-File", scriptPath).CombinedOutput()
 	if err != nil {
 		return Result{Status: "error", Detail: err.Error(), Output: string(out)}
 	}
 	return Result{Status: "ok", Output: string(out)}
+}
+
+// RunHealthCheck spawns scripts/health-check.ps1 in -Quiet mode and parses its
+// JSON stdout into a map[string]probe.Check. Returns nil + error on failure.
+// Only meaningful on Windows; elsewhere returns an error so the caller can
+// fall back to the built-in probes.
+func (d *Dispatcher) RunHealthCheck() (map[string]probe.Check, error) {
+	if runtime.GOOS != "windows" {
+		return nil, fmt.Errorf("health script only runs on windows")
+	}
+	out, err := exec.Command("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass",
+		"-File", filepath.Join("scripts", "health-check.ps1"), "-Quiet").Output()
+	if err != nil {
+		return nil, fmt.Errorf("health-check.ps1: %w", err)
+	}
+	// Output may have a leading text line + JSON; isolate the JSON object.
+	s := strings.TrimSpace(string(out))
+	idx := strings.IndexByte(s, '{')
+	if idx > 0 {
+		s = s[idx:]
+	}
+	var parsed map[string]probe.Check
+	if err := json.Unmarshal([]byte(s), &parsed); err != nil {
+		return nil, fmt.Errorf("parse health JSON: %w", err)
+	}
+	return parsed, nil
 }

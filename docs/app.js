@@ -123,6 +123,8 @@ async function probeTray() {
     live.vjoy      = s.vjoy;
     live.health    = s.health;
     live.configFrom = s.config_from;
+    live.os         = s.os;
+    live.lastRefresh = new Date();
     if (!live.connected) {
       live.connected = true;
       updateLiveBadge(true);
@@ -134,12 +136,14 @@ async function probeTray() {
     }
     rerenderRunningSurfaces();
     renderHealthCards();
+    renderStatusPage();
   } catch (e) {
     if (live.connected) {
       live.connected = false;
       updateLiveBadge(false);
       rerenderRunningSurfaces();
       renderHealthCards();
+      renderStatusPage();
     }
   }
 }
@@ -166,6 +170,120 @@ function renderHealthCards() {
     </div>
   `).join('');
 }
+function renderStatusPage() {
+  const offline = $('#status-offline');
+  const online  = $('#status-online');
+  if (!offline || !online) return;
+  if (!live.connected) {
+    offline.hidden = false;
+    online.hidden = true;
+    return;
+  }
+  offline.hidden = true;
+  online.hidden = false;
+
+  $('#status-os').textContent = live.os || '?';
+  $('#status-config').textContent = live.configFrom || '?';
+  $('#status-updated').textContent = live.lastRefresh
+    ? live.lastRefresh.toLocaleTimeString()
+    : '—';
+
+  // Displays
+  const dispEl = $('#status-displays');
+  if (dispEl && live.displays) {
+    dispEl.innerHTML = live.displays.map(d => {
+      const idAttr = d.id.replace(/\\/g, '\\\\');
+      return `<div class="status-disp ${d.active ? 'on' : 'off'}">
+        <div class="status-disp-name">${escapeHTML(d.name)}${d.primary ? ' <span class="status-tag">primary</span>' : ''}</div>
+        <div class="status-disp-meta">${d.width || '?'}×${d.height || '?'} <span class="status-disp-id">${escapeHTML(d.id)}</span></div>
+        <button class="wheel-calib-btn status-disp-toggle" data-display-id="${escapeHTML(d.id)}">${d.active ? 'Disable' : 'Enable'}</button>
+      </div>`;
+    }).join('');
+  }
+
+  // vJoy
+  const vjEl = $('#status-vjoy');
+  if (vjEl && live.vjoy) {
+    if (!live.vjoy.installed) {
+      vjEl.innerHTML = '<div class="status-vjoy-empty">vJoy driver not installed.</div>';
+    } else {
+      vjEl.innerHTML = (live.vjoy.devices || []).map(d => `
+        <div class="status-vjoy-row">
+          <strong>Device ${d.id}</strong>
+          <span class="${d.enabled ? 'on' : 'off'}">${d.enabled ? '● enabled' : '○ disabled'}</span>
+          <span>${d.buttons} btns · ${d.axes} axes ${d.ffb ? '· FFB on' : ''}</span>
+        </div>
+      `).join('');
+    }
+  }
+
+  // Top processes
+  const procsEl = $('#status-procs');
+  if (procsEl && live.processes) {
+    procsEl.innerHTML = `<table class="status-proc-table">
+      <thead><tr><th>Process</th><th>CPU %</th><th>RAM</th></tr></thead>
+      <tbody>
+      ${live.processes.slice(0, 15).map(p => `<tr>
+        <td>${escapeHTML(p.name)}${p.description ? ` <span class="status-proc-desc">${escapeHTML(p.description)}</span>` : ''}</td>
+        <td>${p.cpu_percent.toFixed(1)}</td>
+        <td>${formatBytes(p.ram_bytes)}</td>
+      </tr>`).join('')}
+      </tbody></table>`;
+  }
+
+  // Health (reuse the same renderer as PC Setup)
+  const healthEl = $('#status-health');
+  if (healthEl && live.health) {
+    healthEl.innerHTML = Object.entries(live.health).map(([k, c]) => `
+      <div class="health-card health-card--${escapeHTML(c.status)}">
+        <div class="health-card-head">
+          <span class="health-status">${c.status === 'ok' ? '✓' : c.status === 'warn' ? '!' : '✗'}</span>
+          <strong>${escapeHTML(c.name)}</strong>
+        </div>
+        ${c.detail ? `<div class="health-detail">${escapeHTML(c.detail)}</div>` : ''}
+        ${c.fix_hint ? `<div class="health-fix">${escapeHTML(c.fix_hint)}</div>` : ''}
+      </div>`).join('');
+  }
+}
+
+function formatBytes(n) {
+  if (!n) return '0';
+  if (n >= 1e9) return (n / 1e9).toFixed(1) + ' GB';
+  if (n >= 1e6) return (n / 1e6).toFixed(0) + ' MB';
+  if (n >= 1e3) return (n / 1e3).toFixed(0) + ' KB';
+  return n + ' B';
+}
+
+// Wire status-page action buttons (delegated; runs once at DOM ready)
+window.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    if (btn.id === 'action-refresh') {
+      btn.disabled = true;
+      await probeTray();
+      btn.disabled = false;
+    } else if (btn.id === 'action-health') {
+      btn.disabled = true;
+      btn.textContent = 'Running…';
+      const r = await trayAction('scripts.health');
+      btn.textContent = r.status === 'ok' ? 'Done · refreshing' : 'Error: ' + (r.detail || '');
+      await probeTray();
+      setTimeout(() => { btn.textContent = 'Run health check'; btn.disabled = false; }, 1500);
+    } else if (btn.dataset.preset) {
+      btn.disabled = true;
+      await trayAction('displays.preset', { preset: btn.dataset.preset });
+      await probeTray();
+      btn.disabled = false;
+    } else if (btn.dataset.displayId) {
+      btn.disabled = true;
+      await trayAction('displays.toggle', { id: btn.dataset.displayId });
+      await probeTray();
+      btn.disabled = false;
+    }
+  });
+});
+
 function updateLiveBadge(on) {
   const el = $('#tray-status');
   if (!el) return;

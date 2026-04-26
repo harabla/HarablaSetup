@@ -70,6 +70,15 @@ func (s *Server) handleVJoy(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
+	// On Windows, prefer the real PowerShell health-check script so probes match
+	// the canonical CLI tool. If it fails (script missing, error), fall back to
+	// the built-in Go probes so the UI never breaks.
+	if runtime.GOOS == "windows" {
+		if checks, err := s.dispatcher.RunHealthCheck(); err == nil {
+			writeJSON(w, checks)
+			return
+		}
+	}
 	writeJSON(w, probe.AllChecks())
 }
 

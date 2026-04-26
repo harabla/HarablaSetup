@@ -815,6 +815,89 @@ code {
 }
 .vjoy-caveats { background: rgba(220, 90, 80, 0.04); border-color: rgba(220, 90, 80, 0.25); }
 
+/* Status page — live control center */
+.status-offline {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--cat-amber);
+  border-radius: 8px;
+  padding: 18px 22px;
+  font-size: 14px; line-height: 1.6;
+  color: var(--text-dim);
+}
+.status-online { display: block; }
+.status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px;
+  margin-bottom: 14px;
+}
+.status-bar-info { display: flex; gap: 8px; flex-wrap: wrap; }
+.status-bar-actions { display: flex; gap: 6px; }
+.status-pill {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 4px 9px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.status-pill strong { color: var(--text-faint); margin-right: 6px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 1100px) { .status-grid { grid-template-columns: 1fr; } }
+.status-card {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.status-card h2 { margin: 0 0 10px; font-size: 14px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+.status-card--wide { grid-column: 1 / -1; }
+
+.status-displays { display: flex; flex-direction: column; gap: 6px; }
+.status-disp {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--bg);
+  border-radius: 6px;
+  border-left: 3px solid var(--text-faint);
+}
+.status-disp.on  { border-left-color: var(--cat-green); }
+.status-disp.off { border-left-color: var(--text-faint); opacity: 0.6; }
+.status-disp-name { font-weight: 600; font-size: 13px; }
+.status-disp-meta { font-size: 11px; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; }
+.status-disp-id   { color: var(--text-faint); margin-left: 6px; }
+.status-tag { background: var(--cat-blue); color: #fff; font-size: 9px; padding: 1px 5px; border-radius: 3px; vertical-align: middle; }
+.status-display-presets { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+
+.status-vjoy-row {
+  display: grid;
+  grid-template-columns: 80px 90px 1fr;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--line);
+}
+.status-vjoy-row:last-child { border-bottom: none; }
+.status-vjoy-row .on  { color: var(--cat-green); }
+.status-vjoy-row .off { color: var(--text-faint); }
+.status-vjoy-empty { color: var(--text-faint); padding: 14px 0; }
+
+.status-proc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.status-proc-table th, .status-proc-table td {
+  text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line);
+}
+.status-proc-table th { color: var(--text-faint); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+.status-proc-table td:nth-child(2), .status-proc-table td:nth-child(3) { font-family: 'IBM Plex Mono', monospace; text-align: right; }
+.status-proc-desc { color: var(--text-faint); margin-left: 6px; font-size: 11px; }
+
 /* Live health cards (shown when tray connected) */
 .health-live {
   margin-bottom: 18px;

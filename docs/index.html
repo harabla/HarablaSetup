@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=12" />
+  <link rel="stylesheet" href="styles.css?v=13" />
   <script>
     // Stash the initial hash for app.js, then strip it so the browser does not
     // anchor-scroll the section heading under the sticky topbar on first load.
@@ -30,6 +30,7 @@
     <a href="#streaming" data-section="streaming">Streaming</a>
     <a href="#audio" data-section="audio">Audio</a>
     <a href="#display" data-section="display">Display</a>
+    <a href="#status" data-section="status">Status</a>
     <a href="#vjoy" data-section="vjoy">vJoy</a>
     <a href="#pcsetup" data-section="pcsetup">PC Setup</a>
     <a href="#setup" data-section="setup">Setup</a>
@@ -217,6 +218,64 @@
   </header>
   <h2>Stream Deck — Display profile</h2>
   <div class="streamdeck" data-grid="streamdeck-display"></div>
+</section>
+
+<section id="status">
+  <header class="section-head">
+    <h1>Status — live control center</h1>
+    <p class="lede">When the tray is running on this PC, this page shows live system state and one-click actions. When it's not running, it shows a placeholder + how to start it. Auto-refreshes every 10 seconds.</p>
+  </header>
+
+  <div id="status-offline" class="status-offline">
+    <strong>Tray not detected.</strong> Start it on this PC:
+    <pre class="vjoy-code">cd tray
+go build -o bin/tray .
+./bin/tray            # foreground with tray icon
+./bin/tray -no-tray   # headless (CLI / dev)</pre>
+    The page will pick it up automatically — refresh isn't needed.
+  </div>
+
+  <div id="status-online" class="status-online" hidden>
+    <div class="status-bar">
+      <div class="status-bar-info">
+        <span class="status-pill"><strong>OS</strong> <span id="status-os">—</span></span>
+        <span class="status-pill"><strong>Config</strong> <span id="status-config">—</span></span>
+        <span class="status-pill"><strong>Last refresh</strong> <span id="status-updated">—</span></span>
+      </div>
+      <div class="status-bar-actions">
+        <button id="action-refresh" class="wheel-calib-btn">Refresh now</button>
+        <button id="action-health"  class="wheel-calib-btn">Run health check</button>
+      </div>
+    </div>
+
+    <div class="status-grid">
+      <div class="status-card">
+        <h2>Displays</h2>
+        <div id="status-displays" class="status-displays"></div>
+        <div class="status-display-presets">
+          <button class="wheel-calib-btn" data-preset="all-on">All ON</button>
+          <button class="wheel-calib-btn" data-preset="vr-race">VR race</button>
+          <button class="wheel-calib-btn" data-preset="work">Work</button>
+          <button class="wheel-calib-btn wheel-calib-btn--danger" data-preset="all-off">All OFF</button>
+        </div>
+      </div>
+
+      <div class="status-card">
+        <h2>vJoy</h2>
+        <div id="status-vjoy" class="status-vjoy"></div>
+      </div>
+
+      <div class="status-card status-card--wide">
+        <h2>Top processes</h2>
+        <div id="status-procs" class="status-procs"></div>
+      </div>
+
+      <div class="status-card status-card--wide">
+        <h2>Health checks</h2>
+        <div id="status-health" class="health-cards"></div>
+      </div>
+    </div>
+  </div>
 </section>
 
 <section id="vjoy">
@@ -1396,6 +1455,6 @@ Write-Host "[report] generated: $LogDir\report.html" -ForegroundColor Cyan</pre>
 }
 </script>
 
-<script src="app.js?v=22"></script>
+<script src="app.js?v=23"></script>
 </body>
 </html>
