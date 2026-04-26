@@ -137,6 +137,7 @@ async function probeTray() {
     rerenderRunningSurfaces();
     renderHealthCards();
     renderStatusPage();
+    renderOverviewTile();
   } catch (e) {
     if (live.connected) {
       live.connected = false;
@@ -144,8 +145,43 @@ async function probeTray() {
       rerenderRunningSurfaces();
       renderHealthCards();
       renderStatusPage();
+      renderOverviewTile();
     }
   }
+}
+
+function renderOverviewTile() {
+  const trayEl   = $('#overview-live-tray');
+  const healthEl = $('#overview-live-health');
+  const procsEl  = $('#overview-live-procs');
+  const sessionEl = $('#overview-live-session');
+  if (!trayEl) return;
+
+  if (!live.connected) {
+    trayEl.textContent = '○ not connected';
+    trayEl.className = 'off';
+    healthEl.textContent = '—';
+    procsEl.textContent = '—';
+    sessionEl.textContent = '—';
+    return;
+  }
+  trayEl.textContent = '● connected';
+  trayEl.className = 'on';
+
+  if (live.health) {
+    const counts = { ok: 0, warn: 0, fail: 0 };
+    Object.values(live.health).forEach(c => counts[c.status] = (counts[c.status] || 0) + 1);
+    const summary = `${counts.ok} ok · ${counts.warn || 0} warn · ${counts.fail || 0} fail`;
+    healthEl.textContent = summary;
+    healthEl.className = counts.fail ? 'off' : counts.warn ? '' : 'on';
+  }
+
+  if (live.processes) {
+    procsEl.textContent = live.processes.length + ' processes';
+  }
+
+  // Last session: not implemented yet
+  sessionEl.textContent = '— (planned)';
 }
 function renderHealthCards() {
   const wrap = $('#health-live');

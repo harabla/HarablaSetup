@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=13" />
+  <link rel="stylesheet" href="styles.css?v=14" />
   <script>
     // Stash the initial hash for app.js, then strip it so the browser does not
     // anchor-scroll the section heading under the sticky topbar on first load.
@@ -24,16 +24,12 @@
   <div class="brand">Gaming Reference</div>
   <input id="search" type="search" placeholder="Search bindings — press /  ·  e.g. M7, reload, fuel" autocomplete="off" />
   <nav id="nav">
-    <a href="#home" data-section="home">Home</a>
-    <a href="#pubg" data-section="pubg">PUBG</a>
-    <a href="#iracing" data-section="iracing">iRacing</a>
-    <a href="#streaming" data-section="streaming">Streaming</a>
-    <a href="#audio" data-section="audio">Audio</a>
-    <a href="#display" data-section="display">Display</a>
-    <a href="#status" data-section="status">Status</a>
-    <a href="#vjoy" data-section="vjoy">vJoy</a>
-    <a href="#pcsetup" data-section="pcsetup">PC Setup</a>
-    <a href="#setup" data-section="setup">Setup</a>
+    <a href="#overview"  data-section="overview">🏠 Overview</a>
+    <a href="#reference" data-section="reference">📚 Reference</a>
+    <a href="#tune"      data-section="tune">🎯 Tune</a>
+    <a href="#verify"    data-section="verify">🩺 Verify</a>
+    <a href="#status"    data-section="status">📊 Diagnose</a>
+    <a href="#pcsetup"   data-section="pcsetup">🔧 Deploy</a>
   </nav>
   <span id="tray-status" class="tray-status static" title="Tray not running — running state from localStorage (design mode)">○ Static</span>
   <button id="shortcut-toggle" class="kbd-hint" aria-label="Show keyboard shortcuts" title="Keyboard shortcuts (?)">?</button>
@@ -58,6 +54,177 @@
 </aside>
 
 <main>
+
+<!-- ============================ OVERVIEW ============================ -->
+<section id="overview">
+  <header class="section-head">
+    <h1>Personal gaming-rig OS</h1>
+    <p class="lede">Reference + verification + diagnostics + recovery for one specific rig: Stream Deck MK.2, Fanatec ClubSport SW Formula V2.5, Corsair Scimitar, three monitors, Quest VR via Virtual Desktop. Browseable from anywhere; runs as a tray on the gaming PC. <a href="/VISION.md" target="_blank">Read the vision &nbsp;↗</a></p>
+  </header>
+
+  <div class="overview-grid">
+    <a class="overview-card overview-card--ref" href="#reference">
+      <div class="overview-card-emoji">📚</div>
+      <h2>Reference</h2>
+      <p>Wheel layouts, Stream Deck profiles, keyboard / mouse / scimitar bindings, architectural deep-dives. Glanceable on a sidescreen during a session.</p>
+      <div class="overview-card-cta">Browse →</div>
+    </a>
+    <a class="overview-card overview-card--tune" href="#tune">
+      <div class="overview-card-emoji">🎯</div>
+      <h2>Tune</h2>
+      <p>Sensitivity calculator, cm/360° converter, "add a new game" wizard. When you're trying something new and need a starting point.</p>
+      <div class="overview-card-cta">Open →</div>
+    </a>
+    <a class="overview-card overview-card--verify" href="#verify">
+      <div class="overview-card-emoji">🩺</div>
+      <h2>Verify</h2>
+      <p>Settings drift checks, mouse / keyboard / scimitar / wheel hardware tests, pre-game routine. Auto-fires on game launch.</p>
+      <div class="overview-card-cta">Run checks →</div>
+    </a>
+    <a class="overview-card overview-card--diag" href="#status">
+      <div class="overview-card-emoji">📊</div>
+      <h2>Diagnose</h2>
+      <p>Live process / display / vJoy / health view. Always-on capture during gaming → HTML session report on exit.</p>
+      <div class="overview-card-cta">Live view →</div>
+    </a>
+    <a class="overview-card overview-card--deploy" href="#pcsetup">
+      <div class="overview-card-emoji">🔧</div>
+      <h2>Deploy</h2>
+      <p>PC setup walkthrough, rig-config, backup &amp; restore. Run once per PC; comeback recovery in ~1 hour.</p>
+      <div class="overview-card-cta">Setup →</div>
+    </a>
+    <div class="overview-card overview-card--status">
+      <div class="overview-card-emoji">⚡</div>
+      <h2>Right now</h2>
+      <div id="overview-live" class="overview-live">
+        <div class="overview-live-row"><span>Tray</span> <span id="overview-live-tray" class="off">○ not connected</span></div>
+        <div class="overview-live-row"><span>Health</span> <span id="overview-live-health">—</span></div>
+        <div class="overview-live-row"><span>Apps running</span> <span id="overview-live-procs">—</span></div>
+        <div class="overview-live-row"><span>Last session</span> <span id="overview-live-session">—</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ REFERENCE ============================ -->
+<section id="reference">
+  <header class="section-head">
+    <h1>Reference</h1>
+    <p class="lede">Every binding, layout, and architectural decision. Pick a card; deep-link straight back from anywhere.</p>
+  </header>
+
+  <h2 class="ref-group-head">Per-game</h2>
+  <div class="ref-grid">
+    <a class="ref-card" href="#iracing">
+      <div class="ref-card-tag">Sim racing</div>
+      <h3>iRacing</h3>
+      <p>Wheel layout (Fanatec photo overlay) · pre-flight · Stream Deck profile · FanaLab profiles · pit macros</p>
+    </a>
+    <a class="ref-card" href="#pubg">
+      <div class="ref-card-tag">FPS</div>
+      <h3>PUBG</h3>
+      <p>Keyboard · Scimitar · Mouse settings · Stream Deck profile · pre-flight</p>
+    </a>
+    <div class="ref-card ref-card--placeholder">
+      <div class="ref-card-tag">Coming</div>
+      <h3>+ Add a game</h3>
+      <p>Use <a href="#tune">Tune</a> to create the starting JSON block, then duplicate the iRacing or PUBG page template.</p>
+    </div>
+  </div>
+
+  <h2 class="ref-group-head">Stream Deck profiles</h2>
+  <div class="ref-grid">
+    <a class="ref-card" href="#home"><h3>Home</h3><p>Top-level — game folders + OBS / Discord / volume / sleep</p></a>
+    <a class="ref-card" href="#audio"><h3>Audio</h3><p>EQ presets, master volume, Spotify, Discord per-app volume</p></a>
+    <a class="ref-card" href="#display"><h3>Display</h3><p>Per-monitor toggles · presets (All ON / VR Race / Work / All OFF)</p></a>
+    <a class="ref-card" href="#streaming"><h3>Streaming</h3><p>OBS scenes, Go Live / End Stream, recording</p></a>
+  </div>
+
+  <h2 class="ref-group-head">Architecture</h2>
+  <div class="ref-grid">
+    <a class="ref-card" href="#vjoy"><h3>vJoy / Joystick Gremlin</h3><p>How MPS-L's position drives ENC-L's context. The whole modifier-without-modifier pattern.</p></a>
+  </div>
+</section>
+
+<!-- ============================ TUNE ============================ -->
+<section id="tune">
+  <header class="section-head">
+    <h1>Tune</h1>
+    <p class="lede">Find sensible starting points for new games and new settings. <strong>Status: planned, not built yet.</strong></p>
+  </header>
+
+  <div class="planned-grid">
+    <div class="planned-card">
+      <h2>Sensitivity calculator <span class="planned-tag">planned</span></h2>
+      <p>cm/360° from your current PUBG baseline (DPI 800 · sens 32 · ADS 20 · 4× scope 20 = ~41 cm/360°). Pick a new game from the list, get a suggested in-game sens that matches the same feel.</p>
+      <p class="planned-meta">Game multipliers imported from <a href="https://github.com/Wareya/Sensitivity-Database" target="_blank">Wareya/Sensitivity-Database</a> (MIT). For ADS / scoped conversions in tactical FPS, link out to <a href="https://www.mouse-sensitivity.com" target="_blank">mouse-sensitivity.com</a> with values pre-filled.</p>
+    </div>
+
+    <div class="planned-card">
+      <h2>"Add a game" wizard <span class="planned-tag">planned</span></h2>
+      <p>Walk through populating <code>games.&lt;name&gt;</code> in <code>rig-config.json</code> — exe paths, settings file paths, expected values, monitoring config, sensitivity. Once added, the game gets verify + monitor + sens recommendations for free.</p>
+    </div>
+
+    <div class="planned-card">
+      <h2>Settings change log <span class="planned-tag">planned</span></h2>
+      <p>When you change a setting (FFB strength, FOV, sens, graphics quality), log it with a timestamp + a one-line "why" + which session it was tried in. Helps correlate "felt different today" with "I changed X yesterday".</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ VERIFY ============================ -->
+<section id="verify">
+  <header class="section-head">
+    <h1>Verify</h1>
+    <p class="lede">Catch settings drift before it hurts a session. Auto-fires when a game launches; also runnable on demand. <strong>Status: partially built — health checks live; hardware tests planned.</strong></p>
+  </header>
+
+  <div class="planned-grid">
+    <div class="planned-card">
+      <h2>Health checks <span class="planned-tag planned-tag--done">live</span></h2>
+      <p>Tools installed, vJoy devices configured, processes running, iRacing controls.cfg present, logs writable. Renders live cards from the tray's <code>/api/health</code> when connected — see <a href="#status">Diagnose</a>.</p>
+    </div>
+
+    <div class="planned-card">
+      <h2>Settings drift detection <span class="planned-tag">planned</span></h2>
+      <p>Read iRacing <code>app.ini</code>, PUBG <code>GameUserSettings.ini</code>, OpenXR Toolkit <code>settings.cfg</code> — diff against expected values declared in <code>rig-config.json</code> per game. Surface mismatches via toast + Stream Deck cell colour.</p>
+    </div>
+
+    <div class="planned-card">
+      <h2>Mouse hardware tests <span class="planned-tag">planned</span></h2>
+      <p>In-browser:
+        <ul>
+          <li><strong>Polling rate</strong> — count <code>pointermove</code> events/sec (expect ~1000)</li>
+          <li><strong>Acceleration</strong> — slow vs fast drag of equal distance, fail if Windows "Enhance Pointer Precision" is on</li>
+          <li><strong>Smoothing / jitter</strong> — visual draw test</li>
+          <li><strong>Windows mouse settings</strong> — read registry, show acceleration on/off</li>
+        </ul>
+        For deeper hardware metrics (malfunction speed, click latency), link out to <a href="https://github.com/microe1/MouseTester" target="_blank">MouseTester</a>.
+      </p>
+    </div>
+
+    <div class="planned-card">
+      <h2>Scimitar mapping check <span class="planned-tag">planned</span></h2>
+      <p>Press each Scimitar button (M1–M12); page captures the keystroke / mouse button it sends; diffs against the mapping declared in the PUBG keyboard JSON. Reveals iCUE profile mismatches without parsing iCUE files.</p>
+      <p class="planned-meta">Future: <a href="https://github.com/CorsairOfficial/cue-sdk" target="_blank">Corsair CUE SDK</a> integration for active-profile read.</p>
+    </div>
+
+    <div class="planned-card">
+      <h2>Keyboard chatter / NKRO <span class="planned-tag">planned</span></h2>
+      <p>Rapid press detection (chatter — multiple registers per press), simultaneous-key registration count (NKRO).</p>
+    </div>
+
+    <div class="planned-card">
+      <h2>Wheel calibration check <span class="planned-tag">planned</span></h2>
+      <p>Live joy.cpl-style view — every Fanatec input visible; verify no drift on centre, full lock left + right, MPS positions all detected, encoder CW + CCW working.</p>
+    </div>
+
+    <div class="planned-card">
+      <h2>Pre-game routine <span class="planned-tag">planned</span></h2>
+      <p>Per-game ordered checklist beyond the running-app pre-flight: FanaLab on right profile, FFB strength sane, headset comfortable, Discord connected, network ping ✓.</p>
+    </div>
+  </div>
+</section>
 
 <section id="home">
   <h1>Home screen</h1>
@@ -986,12 +1153,6 @@ Write-Host "[report] generated: $LogDir\report.html" -ForegroundColor Cyan</pre>
   </details>
 </section>
 
-<section id="setup">
-  <h1>Setup checklist</h1>
-  <p class="lede">Everything needed to rebuild this from scratch.</p>
-  <div class="checklist-grid" id="checklist"></div>
-</section>
-
 </main>
 
 <footer class="footer">
@@ -1455,6 +1616,6 @@ Write-Host "[report] generated: $LogDir\report.html" -ForegroundColor Cyan</pre>
 }
 </script>
 
-<script src="app.js?v=23"></script>
+<script src="app.js?v=24"></script>
 </body>
 </html>

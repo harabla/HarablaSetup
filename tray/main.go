@@ -81,6 +81,16 @@ func newServer(addr, docs string, cfg *config.Config) *http.Server {
 	fs := http.FileServer(http.Dir(docs))
 	mux.Handle("/", fs)
 
+	// Repo-root markdown files (VISION.md, README.md) — served as text/plain
+	for _, name := range []string{"VISION.md", "README.md"} {
+		path := filepath.Join(docs, "..", name)
+		n := name // capture for closure
+		mux.HandleFunc("/"+n, func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			http.ServeFile(w, r, path)
+		})
+	}
+
 	// API
 	api.NewServer(cfg).Register(mux)
 
