@@ -22,6 +22,7 @@ import (
 
 	"github.com/hkbla/streamdeck-config/tray/api"
 	"github.com/hkbla/streamdeck-config/tray/config"
+	"github.com/hkbla/streamdeck-config/tray/exec"
 	"github.com/hkbla/streamdeck-config/tray/watch"
 )
 
@@ -47,8 +48,10 @@ func main() {
 	log.Printf("[tray] docs dir: %s", docs)
 	log.Printf("[tray] listen:   http://%s", *addr)
 
-	// Start the game-launch watcher
+	// Start the game-launch watcher with auto-monitor wired through the dispatcher
+	dispatcher := exec.NewDispatcher(cfg)
 	watcher := watch.New(cfg)
+	watcher.SetMonitorRunner(dispatcher)
 	watcher.Start(context.Background())
 
 	srv := newServer(*addr, docs, cfg, watcher)

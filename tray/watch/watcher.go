@@ -43,10 +43,18 @@ type Event struct {
 type Watcher struct {
 	cfg      *config.Config
 	interval time.Duration
+	monitor  MonitorRunner // optional; spawns the monitor script on launch
 
 	mu        sync.RWMutex
 	state     map[string]*GameState
 	listeners []chan Event
+}
+
+// MonitorRunner — pluggable interface that the watcher uses to start the
+// per-game monitor script on launch transitions. Decoupled from exec.Dispatcher
+// to keep the watch package free of import cycles. Implemented by main.go.
+type MonitorRunner interface {
+	StartMonitor(scriptName string)
 }
 
 // New constructs a Watcher reading game definitions from cfg.
@@ -61,6 +69,10 @@ func New(cfg *config.Config) *Watcher {
 	}
 	return w
 }
+
+// SetMonitorRunner wires a runner. When nil (default), auto-monitor is skipped
+// — the watcher still emits events and runs verify, just doesn't spawn scripts.
+func (w *Watcher) SetMonitorRunner(r MonitorRunner) { w.monitor = r }
 
 // Subscribe returns a channel that receives Events. Buffered so a slow
 // reader doesn't block the watcher goroutine. Unsubscribe by closing
@@ -139,6 +151,12 @@ func (w *Watcher) tick() {
 			// Fire verify async on launch (do not block the watcher loop)
 			if running {
 				go w.runVerify(name)
+				// Auto-spawn monitor script if configured + runner wired
+				if def.Monitoring != nil && def.Monitoring.Auto && def.Monitoring.Wrapper != "" && w.monitor != nil {
+					script := def.Monitoring.Wrapper
+					log.Printf("[watch] auto-monitor: spawning scripts/%s", script)
+					go w.monitor.StartMonitor(script)
+				}
 			}
 		}
 	}

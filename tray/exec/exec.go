@@ -124,6 +124,25 @@ func (d *Dispatcher) displayPreset(preset string) Result {
 	return Result{Status: "ok", Output: string(out)}
 }
 
+// StartMonitor implements watch.MonitorRunner. Spawns the named script
+// asynchronously (fire-and-forget) so the watcher doesn't block. On non-Windows
+// hosts logs only — no actual spawn, since the PowerShell scripts won't run
+// outside Windows.
+func (d *Dispatcher) StartMonitor(scriptName string) {
+	if runtime.GOOS != "windows" {
+		fmt.Printf("[exec] mock: would spawn scripts/%s in background\n", scriptName)
+		return
+	}
+	scriptPath := filepath.Join("scripts", scriptName)
+	cmd := exec.Command("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", scriptPath)
+	if err := cmd.Start(); err != nil {
+		fmt.Printf("[exec] start scripts/%s failed: %v\n", scriptName, err)
+		return
+	}
+	go cmd.Wait() // reap zombie when it exits, ignore result (script writes report itself)
+	fmt.Printf("[exec] spawned scripts/%s pid=%d\n", scriptName, cmd.Process.Pid)
+}
+
 func (d *Dispatcher) runScript(name string) Result {
 	// Whitelist enforced by switch in Run() — by the time we get here, name is safe
 	if runtime.GOOS != "windows" {

@@ -42,6 +42,14 @@ type GameDef struct {
 	Documents     string         `json:"documents,omitempty"`
 	Settings      []string       `json:"settings,omitempty"`        // legacy: bare filenames under Documents
 	SettingsFiles []SettingsFile `json:"settings_files,omitempty"`  // new: categorised + parseable
+	Monitoring    *MonitoringDef `json:"monitoring,omitempty"`      // auto-spawn telemetry on launch
+}
+
+// MonitoringDef — declares whether the watcher should auto-fire a monitor
+// script on launch, and which script to use. If omitted, no auto-monitor.
+type MonitoringDef struct {
+	Auto    bool   `json:"auto"`
+	Wrapper string `json:"wrapper"` // e.g. "monitor-iracing.ps1"
 }
 
 // SettingsFile describes one parseable source (file path or registry key)
@@ -153,10 +161,11 @@ func devDefaults() *Config {
 		},
 		Games: map[string]GameDef{
 			"iRacing": {
-				UI:        `C:\Program Files (x86)\iRacing\iRacingUI.exe`,
-				Sim:       `C:\Program Files (x86)\iRacing\iRacingSim64DX11.exe`,
-				Documents: `%USERPROFILE%\Documents\iRacing`,
-				Settings:  []string{"app.ini", "rendererDX11.ini", "dxconfig.ini"},
+				UI:         `C:\Program Files (x86)\iRacing\iRacingUI.exe`,
+				Sim:        `C:\Program Files (x86)\iRacing\iRacingSim64DX11.exe`,
+				Documents:  `%USERPROFILE%\Documents\iRacing`,
+				Settings:   []string{"app.ini", "rendererDX11.ini", "dxconfig.ini"},
+				Monitoring: &MonitoringDef{Auto: true, Wrapper: "monitor-iracing.ps1"},
 				// Dev mode points at the test fixtures so verify works on Mac
 				SettingsFiles: []SettingsFile{
 					{

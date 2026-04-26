@@ -83,15 +83,21 @@ $pollerJob = Start-Job -ScriptBlock {
     }
 } -ArgumentList (Join-Path $logDir 'processes.csv')
 
-# ---------- 5. Launch iRacing UI ----------
-$iracingUi = Expand-EnvPath $cfg.games.iRacing.ui
-if (-not (Test-Path $iracingUi)) {
-    Write-Error "iRacing UI not found at $iracingUi (check rig-config.json games.iRacing.ui)"
-    Stop-Job $pollerJob; Remove-Job $pollerJob
-    exit 1
+# ---------- 5. Launch iRacing UI (or attach if already running) ----------
+$alreadyRunning = (Get-Process iRacingSim64DX11 -ErrorAction SilentlyContinue) -or
+                  (Get-Process iRacingUI       -ErrorAction SilentlyContinue)
+if ($alreadyRunning) {
+    Write-Host "[monitor] iRacing already running — attaching" -ForegroundColor Cyan
+} else {
+    $iracingUi = Expand-EnvPath $cfg.games.iRacing.ui
+    if (-not (Test-Path $iracingUi)) {
+        Write-Error "iRacing UI not found at $iracingUi (check rig-config.json games.iRacing.ui)"
+        Stop-Job $pollerJob; Remove-Job $pollerJob
+        exit 1
+    }
+    $ui = Start-Process $iracingUi -PassThru
+    Write-Host "[monitor] iRacing launched (PID $($ui.Id))" -ForegroundColor Green
 }
-$ui = Start-Process $iracingUi -PassThru
-Write-Host "[monitor] iRacing launched (PID $($ui.Id))" -ForegroundColor Green
 
 # ---------- 6. Wait for iRacing process tree to exit ----------
 Start-Sleep -Seconds 30  # let iRacing actually start
