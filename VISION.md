@@ -440,6 +440,9 @@ doesn't serve them is a candidate for cutting.
 - monitor-iracing.ps1 (full session capture: HWiNFO + PresentMon + poller)
 - generate-report.ps1 (HTML report with Chart.js frametime chart)
 - bundle.ps1 (capture working PC's portable configs into bundle/)
+- setup.ps1 (8-phase deploy: preflight → winget → github → portable →
+  vendor → restore → rigconfig → healthcheck. Idempotent, -DryRun
+  supported, per-phase skip/only flags, logs to C:\Logs\setup\)
 
 *Deploy scaffolding:*
 - bundle/ directory with README documenting structure + capture workflow
@@ -450,20 +453,21 @@ doesn't serve them is a candidate for cutting.
 
 **Next (in roughly this order):**
 
-*Reach for these on the PC (need real rig to validate):*
+*PC-required to validate / progress:*
 1. **Run `bundle.ps1` once** on the working PC, commit `bundle/` outputs
    (Stream Deck profiles, Gremlin XML, controls.cfg, generated .bat
-   files). Closes the capture half of Deploy.
-2. **`setup.ps1` installer** — the restore half. winget + GitHub releases
-   + portable downloads + import bundle into place + interactive vendor-
-   install pauses + final health-check + report. ~half day's work.
+   files). Until this happens, fresh-PC deploys still rebuild Stream
+   Deck profiles + Gremlin XML by hand.
+2. **Run `setup.ps1` on a fresh PC** to validate the install flow.
+   Likely surfaces: winget package ID corrections, GitHub release asset
+   patterns, vendor URL changes. Fix as found.
 3. **Real Windows probes** in `probe_windows.go` — replace mocks with
    registry reads (vJoy / HidHide / mouse settings), `EnumDisplayDevices`,
-   PerfCounter for live CPU. ~2 hours when sitting at the PC.
+   PerfCounter for live CPU. ~2 hours sitting at the PC.
 4. **Wheel calibration check** widget on Verify (live joy.cpl-style view —
    needs Windows joystick API).
 
-*Polish that can ship on Mac:*
+*Mac-shippable polish:*
 5. **iRacing telemetry hook** (live FFB clipping in Status via SimHub
    shared memory or iRSDK direct). ~3 hours.
 6. **Settings change log** in Tune tab — annotated history of intentional
