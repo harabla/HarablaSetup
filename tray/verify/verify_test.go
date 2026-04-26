@@ -3,7 +3,7 @@ package verify
 import (
 	"testing"
 
-	"github.com/hkbla/streamdeck-config/tray/config"
+	"github.com/harabla/HarablaSetup/tray/config"
 )
 
 func newTestConfig() *config.Config {

@@ -12,11 +12,11 @@ import (
 
 	"strings"
 
-	"github.com/hkbla/streamdeck-config/tray/config"
-	"github.com/hkbla/streamdeck-config/tray/exec"
-	"github.com/hkbla/streamdeck-config/tray/probe"
-	"github.com/hkbla/streamdeck-config/tray/verify"
-	"github.com/hkbla/streamdeck-config/tray/watch"
+	"github.com/harabla/HarablaSetup/tray/config"
+	"github.com/harabla/HarablaSetup/tray/exec"
+	"github.com/harabla/HarablaSetup/tray/probe"
+	"github.com/harabla/HarablaSetup/tray/verify"
+	"github.com/harabla/HarablaSetup/tray/watch"
 )
 
 // Server holds the dependencies for handlers — config, action dispatcher,

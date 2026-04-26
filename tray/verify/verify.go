@@ -11,8 +11,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hkbla/streamdeck-config/tray/config"
-	"github.com/hkbla/streamdeck-config/tray/parse"
+	"github.com/harabla/HarablaSetup/tray/config"
+	"github.com/harabla/HarablaSetup/tray/parse"
 )
 
 // Result — outcome of one verify pass against one game (or "system").

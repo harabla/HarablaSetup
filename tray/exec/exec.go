@@ -11,8 +11,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/hkbla/streamdeck-config/tray/config"
-	"github.com/hkbla/streamdeck-config/tray/probe"
+	"github.com/harabla/HarablaSetup/tray/config"
+	"github.com/harabla/HarablaSetup/tray/probe"
 )
 
 // Result — outcome of a dispatched action. Status is "ok" or "error".

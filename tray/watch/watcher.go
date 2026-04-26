@@ -14,9 +14,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hkbla/streamdeck-config/tray/config"
-	"github.com/hkbla/streamdeck-config/tray/probe"
-	"github.com/hkbla/streamdeck-config/tray/verify"
+	"github.com/harabla/HarablaSetup/tray/config"
+	"github.com/harabla/HarablaSetup/tray/probe"
+	"github.com/harabla/HarablaSetup/tray/verify"
 )
 
 // Default poll interval. 2.5s feels right — fast enough to fire verify

@@ -22,11 +22,11 @@ import (
 
 	"fmt"
 
-	"github.com/hkbla/streamdeck-config/tray/api"
-	"github.com/hkbla/streamdeck-config/tray/config"
-	"github.com/hkbla/streamdeck-config/tray/exec"
-	"github.com/hkbla/streamdeck-config/tray/notify"
-	"github.com/hkbla/streamdeck-config/tray/watch"
+	"github.com/harabla/HarablaSetup/tray/api"
+	"github.com/harabla/HarablaSetup/tray/config"
+	"github.com/harabla/HarablaSetup/tray/exec"
+	"github.com/harabla/HarablaSetup/tray/notify"
+	"github.com/harabla/HarablaSetup/tray/watch"
 )
 
 const defaultAddr = "127.0.0.1:8765"

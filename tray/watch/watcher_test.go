@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hkbla/streamdeck-config/tray/config"
+	"github.com/harabla/HarablaSetup/tray/config"
 )
 
 func TestExeNames(t *testing.T) {
