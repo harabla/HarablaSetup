@@ -1,0 +1,1394 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gaming Reference — Stream Deck / Wheel / Scimitar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=10" />
+  <script>
+    // Stash the initial hash for app.js, then strip it so the browser does not
+    // anchor-scroll the section heading under the sticky topbar on first load.
+    if (location.hash) {
+      window.__initialHash = location.hash.replace('#', '');
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  </script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">Gaming Reference</div>
+  <input id="search" type="search" placeholder="Search bindings — press /  ·  e.g. M7, reload, fuel" autocomplete="off" />
+  <nav id="nav">
+    <a href="#home" data-section="home">Home</a>
+    <a href="#pubg" data-section="pubg">PUBG</a>
+    <a href="#iracing" data-section="iracing">iRacing</a>
+    <a href="#streaming" data-section="streaming">Streaming</a>
+    <a href="#audio" data-section="audio">Audio</a>
+    <a href="#display" data-section="display">Display</a>
+    <a href="#vjoy" data-section="vjoy">vJoy</a>
+    <a href="#pcsetup" data-section="pcsetup">PC Setup</a>
+    <a href="#setup" data-section="setup">Setup</a>
+  </nav>
+  <button id="shortcut-toggle" class="kbd-hint" aria-label="Show keyboard shortcuts" title="Keyboard shortcuts (?)">?</button>
+</header>
+
+<div id="shortcut-help" class="shortcut-help hidden" role="dialog" aria-label="Keyboard shortcuts">
+  <div class="shortcut-help-inner">
+    <h4>Keyboard shortcuts</h4>
+    <dl>
+      <dt><kbd>/</kbd></dt><dd>Focus search</dd>
+      <dt><kbd>1</kbd>–<kbd>5</kbd></dt><dd>Switch tabs</dd>
+      <dt><kbd>Esc</kbd></dt><dd>Close panel · clear search</dd>
+      <dt><kbd>?</kbd></dt><dd>Toggle this help</dd>
+    </dl>
+    <p class="shortcut-help-foot">Click any binding for details.</p>
+  </div>
+</div>
+
+<aside id="detail" class="detail hidden" aria-live="polite">
+  <button class="detail-close" aria-label="Close">×</button>
+  <div class="detail-body"></div>
+</aside>
+
+<main>
+
+<section id="home">
+  <h1>Home screen</h1>
+  <p class="lede">Stream Deck MK.2 — 15 keys, 3 rows × 5 columns. Top-level layout.</p>
+  <div class="streamdeck" data-grid="streamdeck-home"></div>
+  <div class="notes">
+    <h3>Notes</h3>
+    <ul>
+      <li><strong>EQ switches</strong> use SteelSeries GG hotkeys (no plugin). Set in GG, mirror in Stream Deck → System → Hotkey.</li>
+      <li><strong>Game VOL</strong> (row 2) and <strong>Discord VOL</strong> (row 3) are vertically adjacent for fast mix tweaks.</li>
+      <li><strong>Discord VOL</strong> uses Win Tools → App Audio Mixer, target <code>Discord.exe</code>.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="pubg">
+  <header class="section-head">
+    <h1>PUBG</h1>
+    <p class="lede">In-game lives on the Scimitar. Keyboard keeps movement/combat. Stream Deck is pre-match setup.</p>
+  </header>
+
+  <div class="preflight" data-preflight="pubg" aria-label="Pre-flight apps for PUBG"></div>
+
+  <div class="surface-grid surface-grid--pubg">
+    <article class="card card--accent-blue card--keyboard">
+      <header class="card-head">
+        <h3>Keyboard</h3>
+        <span class="card-sub">movement &amp; combat</span>
+      </header>
+      <div class="keyboard-section" id="keyboard"></div>
+      <div class="legend" id="keyboard-legend"></div>
+    </article>
+
+    <article class="card card--accent-red card--scimitar">
+      <header class="card-head">
+        <h3>Scimitar</h3>
+        <span class="card-sub">12 thumb buttons · in-game</span>
+      </header>
+      <div class="scimitar" id="scimitar"></div>
+      <ul class="card-notes">
+        <li><span class="bar gold"></span> Gold = thumb-rest row (M7–M9), easiest to hit.</li>
+        <li>Top row (M1–M3) is hardest — least-pressured actions.</li>
+        <li><strong>Seat switch:</strong> hold W + M2 → car keeps speed.</li>
+        <li><strong>Scope zero</strong> M6 / M9 vertical — straight up/down.</li>
+      </ul>
+    </article>
+
+    <article class="card card--accent-teal card--mouse">
+      <header class="card-head">
+        <h3>Mouse</h3>
+        <span class="card-sub">Logitech</span>
+      </header>
+      <div class="mouse-wrap">
+        <div class="mouse">
+          <h4>Bindings</h4>
+          <div class="mouse-row"><span class="mid">LMB</span><span>Fire</span></div>
+          <div class="mouse-row"><span class="mid">RMB</span><span>Aim / ADS</span></div>
+          <div class="mouse-row"><span class="mid">MMB</span><span>Tag waypoint</span></div>
+          <div class="mouse-row mouse-row--unused"><span class="mid">Wheel ↑↓</span><span>unused</span></div>
+          <div class="mouse-row mouse-row--unused"><span class="mid">Side ↑↓</span><span>unused</span></div>
+        </div>
+        <div class="mouse">
+          <h4>Sensitivity</h4>
+          <div class="mouse-row"><span class="mid">DPI</span><span>800</span></div>
+          <div class="mouse-row"><span class="mid">Base sens</span><span>32</span></div>
+          <div class="mouse-row"><span class="mid">4×+ scope</span><span>20</span></div>
+          <div class="mouse-row"><span class="mid">Polling</span><span>1000 Hz</span></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="card card--accent-amber card--streamdeck">
+      <header class="card-head">
+        <h3>Stream Deck</h3>
+        <span class="card-sub">PUBG folder · pre-match</span>
+      </header>
+      <div class="streamdeck" data-grid="streamdeck-pubg"></div>
+      <p class="caption">PUBG EQ duplicated here — easy to forget before queuing.</p>
+    </article>
+  </div>
+</section>
+
+<section id="iracing">
+  <h1>iRacing</h1>
+  <p class="lede">Wheel handles driving. Stream Deck handles pit strategy. No overlap.</p>
+
+  <div class="preflight" data-preflight="iracing" aria-label="Pre-flight apps for iRacing"></div>
+
+  <div class="notes">
+    <h3>Session start flow</h3>
+    <ol>
+      <li>Switch <strong>FanaLab</strong> to the right profile (GT3 / LMP / Formula).</li>
+      <li>Launch <strong>iRacing</strong>, then <strong>Crew Chief</strong>, then <strong>SimHub</strong>.</li>
+      <li>Verify Racing EQ is active (deck button — confirm in SteelSeries GG tray).</li>
+      <li>Join session. Confirm <strong>iRaceIT</strong> shows live data on the deck.</li>
+    </ol>
+  </div>
+
+  <h2>Fanatec ClubSport F1 V2.5 — wheel layout</h2>
+  <div class="car-class-toggle">
+    <span>Car class:</span>
+    <button class="cc-btn active" data-cc="gt3">GT3 / GTE</button>
+    <button class="cc-btn" data-cc="lmp">LMP / GTP</button>
+    <button class="cc-btn" data-cc="formula">Formula</button>
+  </div>
+  <div class="wheel" id="wheel"></div>
+  <div class="fanalab">
+    <h3>FanaLab profiles</h3>
+    <p>Switch the FanaLab profile <em>before</em> launching the sim — three profiles share the physical layout, only the highlighted entries differ.</p>
+    <div id="fanalab-table"></div>
+  </div>
+
+  <h2>Stream Deck — iRacing folder</h2>
+  <div class="streamdeck" data-grid="streamdeck-iracing"></div>
+
+  <h3>Pit macro strings</h3>
+  <table class="macro-table" id="macro-table">
+    <thead><tr><th>Action</th><th>Autochat string</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <p class="caption"><code>999l</code> means "fill to max" — iRacing caps at tank capacity per car, so this works across GT3, LMP, and Formula without knowing the tank size.</p>
+</section>
+
+<section id="streaming">
+  <h1>Streaming</h1>
+  <p class="lede">OBS Studio scenes and stream/record controls. Go Live and End Stream are <strong>separate</strong> actions, never a toggle.</p>
+
+  <h2>Stream Deck — Streaming folder</h2>
+  <div class="streamdeck" data-grid="streamdeck-streaming"></div>
+
+  <h2>Scenes</h2>
+  <table class="scene-table">
+    <thead><tr><th>Scene</th><th>Composition</th><th>When to use</th></tr></thead>
+    <tbody>
+      <tr><td>Race</td><td>Full gameplay, game audio, mic</td><td>Active gameplay</td></tr>
+      <tr><td>Lobby</td><td>Lobby/menu, lower audio, mic</td><td>Between races</td></tr>
+      <tr><td>BRB</td><td>Static overlay, music, mic off</td><td>Short break</td></tr>
+      <tr><td>End</td><td>Results screen, webcam, mic</td><td>Post-race wrap-up</td></tr>
+      <tr><td>Cam</td><td>Webcam only, mic, no game capture</td><td>Direct commentary</td></tr>
+    </tbody>
+  </table>
+  <p class="caption">OBS replay buffer must be enabled (Settings → Output → Replay Buffer, 60–90 s) for <strong>Save Clip</strong> to work.</p>
+</section>
+
+<section id="audio">
+  <header class="section-head">
+    <h1>Audio</h1>
+    <p class="lede">EQ presets and master volume. Reachable from any profile via the Audio cell. EQ profiles are SteelSeries GG hotkeys, not Stream Deck profiles — they switch headset DSP, not deck pages.</p>
+  </header>
+  <h2>Stream Deck — Audio profile</h2>
+  <div class="streamdeck" data-grid="streamdeck-audio"></div>
+</section>
+
+<section id="display">
+  <header class="section-head">
+    <h1>Display</h1>
+    <p class="lede">Toggle individual monitors on/off without unplugging cables. Driven by <strong>NirSoft MultiMonitorTool</strong> (free) — Stream Deck cells fire small .bat files that disable / enable a monitor (Windows treats it like unplugged, migrates open windows). Hardware: <strong>Top-Left + Top-Right + Ultrawide</strong>.</p>
+  </header>
+  <h2>Stream Deck — Display profile</h2>
+  <div class="streamdeck" data-grid="streamdeck-display"></div>
+</section>
+
+<section id="vjoy">
+  <header class="section-head">
+    <h1>vJoy / Joystick Gremlin — MPS context pairing</h1>
+    <p class="lede">The wheel exposes 12 unique buttons per MPS dial. We use <strong>MPS-L's position</strong> as the context selector for ENC-L — turn the dial to pick what the left encoder adjusts, then twist the encoder to change the value. <strong>ENC-R = Brake Bias</strong> stays direct (most-used adjustment). Standard real-F1-wheel pattern. Requires <strong>vJoy + Joystick Gremlin</strong> to dispatch encoder events to different vJoy buttons based on MPS state.</p>
+  </header>
+
+  <div class="vjoy-grid">
+    <div class="card">
+      <h2>The stack</h2>
+      <ol class="vjoy-steps">
+        <li>Install <strong>vJoy</strong> driver — creates a virtual joystick (up to 128 buttons, 8 axes). <a href="https://sourceforge.net/projects/vjoystick/" target="_blank">sourceforge.net/projects/vjoystick</a></li>
+        <li>Install <strong>HidHide</strong> — hides the raw Fanatec wheel from games so iRacing only sees the vJoy device. <a href="https://github.com/nefarius/HidHide" target="_blank">github.com/nefarius/HidHide</a></li>
+        <li>Install <strong>Joystick Gremlin</strong> — routes physical → vJoy with mode/state logic. <a href="https://whitemagic.github.io/JoystickGremlin/" target="_blank">whitemagic.github.io/JoystickGremlin</a></li>
+        <li>In Gremlin, create 12 modes: <code>MPS-L-pos1</code> … <code>MPS-L-pos12</code>. For each MPS-L position button, add an action: "Switch to mode <code>MPS-L-posN</code>" (latched, not held).</li>
+        <li>In each mode, route ENC-L CW / CCW to a different vJoy button (e.g. mode 1 → vJoy 71/72 = Fuel Mix +/−, mode 2 → vJoy 73/74 = TC2 +/−, …).</li>
+        <li>In iRacing Controls, bind <em>Fuel Mix increment</em> to vJoy 71, <em>Fuel Mix decrement</em> to vJoy 72, and so on for every encoder context.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>Why this pattern</h2>
+      <ul class="vjoy-bullets">
+        <li><strong>Physical state visible</strong> — the MPS dial clicks into each slot, so you always know what ENC-L is currently tuning. No on-screen indicator needed.</li>
+        <li><strong>F1 muscle memory</strong> — same pattern as real-world Mercedes / Ferrari / RB wheels.</li>
+        <li><strong>iRacing-legal</strong> — vJoy/Gremlin/HidHide are openly discussed on iRacing's forums. Anti-cheat does not inspect input drivers.</li>
+        <li><strong>Reversible</strong> — disable HidHide and the wheel works exactly as before.</li>
+        <li><strong>BB stays direct</strong> — ENC-R is unchanged, no context dance for the most-used adjustment.</li>
+      </ul>
+    </div>
+
+    <div class="card vjoy-card-wide">
+      <h2>What Gremlin enables beyond MPS context</h2>
+      <ul class="vjoy-bullets">
+        <li><strong>Macros</strong> — one press fires a sequence of vJoy buttons + keystrokes with timing (e.g. long-press B1 → "Tow + Reset").</li>
+        <li><strong>Synthetic axes</strong> — turn an encoder's CW/CCW button presses into a sweeping axis (useful for iRacing inputs that only accept axis, not buttons).</li>
+        <li><strong>Conditional logic</strong> — fire different actions based on which MPS mode is active, or chord (A+B = X).</li>
+        <li><strong>Multiple context dials</strong> — same trick with MPS-R if you ever want it; today we keep MPS-R direct as TC Level.</li>
+      </ul>
+    </div>
+
+    <div class="card vjoy-card-wide">
+      <h2>Layout cheat sheet</h2>
+      <p class="vjoy-cheat-lede">All bindings live in the iRacing wheel JSON — see the full legend on the <a href="#iracing">iRacing tab</a>.</p>
+      <table class="vjoy-table">
+        <thead><tr><th>Control</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>ENC-R (rotate)</td><td>Brake Bias − / + (always direct)</td></tr>
+          <tr><td>ENC-L (rotate)</td><td>Adjusts whatever MPS-L is pointing at — see context table</td></tr>
+          <tr><td>MPS-R (12-pos)</td><td>TC Level (direct)</td></tr>
+          <tr><td>MPS-L (12-pos)</td><td>Context selector for ENC-L</td></tr>
+          <tr><td>UPDN-L ↑ / ↓</td><td>ERS Deploy Mode next / prev</td></tr>
+          <tr><td>UPDN-R ↑ / ↓</td><td>Black box cycle next / prev</td></tr>
+          <tr><td>FunkySwitch ↑↓</td><td>Black box row up / down (within current box)</td></tr>
+          <tr><td>FunkySwitch ←→</td><td>Black box tab left / right</td></tr>
+          <tr><td>FunkySwitch rotary</td><td>iRating / SoF cycle</td></tr>
+        </tbody>
+      </table>
+
+      <h3 style="margin-top:18px;font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">MPS-L context → ENC-L adjusts</h3>
+      <table class="vjoy-table">
+        <thead><tr><th>MPS-L pos</th><th>ENC-L adjusts</th><th>iRacing command</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Fuel Mix</td><td>Fuel Mixture inc / dec</td></tr>
+          <tr><td>2</td><td>TC2 / Slip Angle</td><td>TC2 Slip Angle inc / dec (LMP2/LMDh)</td></tr>
+          <tr><td>3</td><td>Diff Entry</td><td>Diff Entry Angle inc / dec</td></tr>
+          <tr><td>4</td><td>Diff Mid</td><td>Diff Middle Angle inc / dec</td></tr>
+          <tr><td>5</td><td>Diff Exit</td><td>Diff Exit Angle inc / dec</td></tr>
+          <tr><td>6</td><td>FFB Strength</td><td>FFB Strength inc / dec</td></tr>
+          <tr><td>7</td><td>In-car Volume</td><td>In-car Volume inc / dec</td></tr>
+          <tr><td>8</td><td>Spotter Volume</td><td>Spotter Volume inc / dec</td></tr>
+          <tr><td>9</td><td>Brake Migration</td><td>Brake Migration inc / dec</td></tr>
+          <tr><td>10–12</td><td>Spare</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card vjoy-card-wide">
+      <h2>Per-app audio (Discord / Spotify / Game) — VR-friendly</h2>
+      <p class="vjoy-cheat-lede">MPS-L positions 10–12 control OS-level per-app volume. iRacing can't bind these — Gremlin fires a small command-line script per encoder detent. Useful in VR when you can't reach the keyboard or see the Stream Deck.</p>
+      <h3 style="margin:14px 0 6px;font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">Easiest tool: NirSoft SoundVolumeView</h3>
+      <p style="margin:0 0 8px;font-size:13px;">Free, single .exe, handles multi-process apps like Discord cleanly. <a href="https://www.nirsoft.net/utils/sound_volume_view.html" target="_blank">nirsoft.net/utils/sound_volume_view.html</a></p>
+      <pre class="vjoy-code">SoundVolumeView.exe /ChangeVolume "Discord"   +5
+SoundVolumeView.exe /ChangeVolume "Discord"   -5
+SoundVolumeView.exe /ChangeVolume "Spotify"   +5
+SoundVolumeView.exe /ChangeVolume "Spotify"   -5
+SoundVolumeView.exe /ChangeVolume "iRacingSim64DX11" +5
+SoundVolumeView.exe /ChangeVolume "iRacingSim64DX11" -5</pre>
+      <p style="margin:10px 0 6px;font-size:13px;color:var(--text-dim);">In Gremlin: in mode <code>MPS-L-pos10</code>, bind ENC-L CW → <em>Run program</em> action with the +5 command, ENC-L CCW → −5 command. Same pattern for pos 11 / 12.</p>
+      <h3 style="margin:14px 0 6px;font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">Alternative: nircmd</h3>
+      <pre class="vjoy-code">nircmd.exe setappvolume discord.exe +0.05
+nircmd.exe setappvolume spotify.exe -0.05
+nircmd.exe setappvolume iRacingSim64DX11.exe +0.05</pre>
+      <p style="margin:10px 0 0;font-size:12px;color:var(--text-faint);">Note: app name must match the .exe (Discord) or window title (varies). SoundVolumeView lets you list current sessions with <code>/SaveFileEncoding 3 /Sstop "" sessions.txt</code> if names don't work.</p>
+    </div>
+
+    <div class="card vjoy-card-wide vjoy-caveats">
+      <h2>Caveats</h2>
+      <ul class="vjoy-bullets">
+        <li>Exact HID button-numbers per control depend on firmware revision — verify in Windows <code>joy.cpl</code> with Gremlin's input viewer before authoring mappings.</li>
+        <li>MPS positions fire only on <em>change</em>, not continuously — Gremlin's "Switch to mode" action handles this fine. If a position is missed, the encoder routes to whatever mode was last selected (so it can't break, just be in the wrong context).</li>
+        <li>Some iRacing adjustables (Diff axes, Brake Migration, TC2) are car-specific — bindings exist game-wide but only do something when the active car exposes them.</li>
+        <li>Side joysticks may be 4-way or 8-way depending on your unit. Check joy.cpl — if diagonals fire, treat them as separate inputs in Gremlin.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="pcsetup">
+  <header class="section-head">
+    <h1>PC Setup — building this rig from the spec</h1>
+    <p class="lede">First-time-on-PC walkthrough. Doubles as the rebuild guide if you ever move to another machine. Follow top-to-bottom; each step is independent and resumable. Designed on Mac, executed on Windows.</p>
+  </header>
+
+  <details class="pcsetup-group" open>
+    <summary><h2 style="display:inline;">🛠 Base setup (universal — do this on any new PC)</h2></summary>
+    <p class="pcsetup-hint">Hardware check, base utility tools, display toggle scripts, Stream Deck profiles. Required for everything; doesn't assume a wheel.</p>
+  <ol class="pcsetup-steps">
+
+    <li class="pcsetup-step">
+      <h2><span class="pcsetup-num"></span> Hardware check (deck + screens + audio)</h2>
+      <ul class="pcsetup-bullets">
+        <li>Stream Deck MK.2 plugged into USB hub. Verify lights up + Stream Deck app sees it.</li>
+        <li>All 3 monitors detected: <code>Win+P</code> → "Extend". In Display Settings note the IDs (Display 1, 2, 3) and which physical monitor each is.</li>
+        <li>Audio output works (headset / speakers play sound from a test source).</li>
+      </ul>
+    </li>
+
+    <li class="pcsetup-step">
+      <h2><span class="pcsetup-num"></span> Install base utility tools</h2>
+      <p class="pcsetup-hint">No config yet, just install. All free except some Stream Deck plugins (one-time paid).</p>
+      <table class="pcsetup-table">
+        <thead><tr><th>Tool</th><th>Purpose</th><th>Link</th></tr></thead>
+        <tbody>
+          <tr><td>Stream Deck app</td><td>Profile host, plugin runtime</td><td><a href="https://www.elgato.com/downloads" target="_blank">elgato.com/downloads</a></td></tr>
+          <tr><td>MultiMonitorTool</td><td>Per-monitor enable/disable CLI (used by Display profile)</td><td><a href="https://www.nirsoft.net/utils/multi_monitor_tool.html" target="_blank">nirsoft.net</a></td></tr>
+          <tr><td>SteelSeries GG</td><td>Sonar EQ profiles, mic processing</td><td><a href="https://steelseries.com/gg" target="_blank">steelseries.com/gg</a></td></tr>
+          <tr><td>Spotify desktop</td><td>Required for Spotify volume control + Stream Deck plugin</td><td>spotify.com</td></tr>
+          <tr><td>Discord desktop</td><td>Voice + Discord Stream Deck plugin</td><td>discord.com</td></tr>
+        </tbody>
+      </table>
+      <p class="pcsetup-hint">Drop <code>MultiMonitorTool.exe</code> into <code>C:\Tools\MultiMonitorTool\</code> — Stream Deck cells will call this path in the next step.</p>
+    </li>
+
+    <li class="pcsetup-step">
+      <h2><span class="pcsetup-num"></span> Display toggle scripts (for the Display profile)</h2>
+      <p class="pcsetup-hint">Find your monitor IDs first: run <code>MultiMonitorTool.exe</code> (no args) → it lists each monitor with its <code>\\.\DISPLAY1</code> ID. Map IDs to your physical Top-L / Top-R / Ultrawide. Then create these .bat files in <code>C:\Tools\MultiMonitorTool\</code>:</p>
+      <pre class="vjoy-code">REM toggle-top-left.bat
+"C:\Tools\MultiMonitorTool\MultiMonitorTool.exe" /switch "\\.\DISPLAY2"
+
+REM toggle-top-right.bat
+"C:\Tools\MultiMonitorTool\MultiMonitorTool.exe" /switch "\\.\DISPLAY3"
+
+REM toggle-ultra.bat
+"C:\Tools\MultiMonitorTool\MultiMonitorTool.exe" /switch "\\.\DISPLAY1"
+
+REM all-on.bat
+"C:\Tools\MultiMonitorTool\MultiMonitorTool.exe" /enable "\\.\DISPLAY1" "\\.\DISPLAY2" "\\.\DISPLAY3"
+
+REM all-off.bat
+"C:\Tools\MultiMonitorTool\MultiMonitorTool.exe" /disable "\\.\DISPLAY1" "\\.\DISPLAY2" "\\.\DISPLAY3"
+
+REM vr-race.bat  (ultrawide on, top screens off)
+"C:\Tools\MultiMonitorTool\MultiMonitorTool.exe" /enable  "\\.\DISPLAY1"
+"C:\Tools\MultiMonitorTool\MultiMonitorTool.exe" /disable "\\.\DISPLAY2" "\\.\DISPLAY3"
+
+REM work.bat  (all on; placeholder for future app-launch additions)
+"C:\Tools\MultiMonitorTool\MultiMonitorTool.exe" /enable "\\.\DISPLAY1" "\\.\DISPLAY2" "\\.\DISPLAY3"</pre>
+      <p class="pcsetup-hint">Each Display profile cell uses Stream Deck's <em>System: Open</em> action pointed at the matching .bat. Toggle = press once to disable, press again to enable.</p>
+    </li>
+
+    <li class="pcsetup-step">
+      <h2><span class="pcsetup-num"></span> Stream Deck profiles + plugins</h2>
+      <ul class="pcsetup-bullets">
+        <li>Install plugins from Marketplace: <strong>Volume Controller</strong> (Elgato), <strong>Spotify</strong> (BarRaider), <strong>Discord</strong> (Elgato), <strong>Audio Switcher</strong> (Fred Emmott), <strong>Advanced Launcher</strong> (BarRaider), <strong>OBS Studio</strong> (Elgato).</li>
+        <li>Build profiles per the Home / PUBG / Streaming / Audio / <strong>Display</strong> tabs of this docs page (each shows the layout + cell glyphs / actions).</li>
+        <li>Pre-flight cells use Advanced Launcher with the .exe path on your machine — set these per-PC (paths differ).</li>
+        <li>Display cells use System: Open pointed at the .bat files from the previous step.</li>
+      </ul>
+    </li>
+
+    <li class="pcsetup-step">
+      <h2><span class="pcsetup-num"></span> Backup-everything bundle (base)</h2>
+      <p class="pcsetup-hint">Capture so a future move is &lt; 1 hour.</p>
+      <ul class="pcsetup-bullets">
+        <li>Each Stream Deck profile exported as <code>.streamDeckProfile</code></li>
+        <li><code>C:\Tools\MultiMonitorTool\</code> folder (incl. .bat files)</li>
+        <li><code>C:\Tools\Monitoring\</code> folder (the two PowerShell scripts) — only base bundle if monitoring is universal; otherwise iRacing-specific</li>
+        <li>Discord settings (export not natively supported — screenshot the keybind page)</li>
+      </ul>
+    </li>
+
+  </ol>
+  </details>
+
+  <details class="pcsetup-group">
+    <summary><h2 style="display:inline;">🩺 Health check &amp; rig config (planned tooling)</h2></summary>
+    <p class="pcsetup-hint">Design notes for a small standalone PowerShell app that verifies installs, checks expected configs, and stores per-PC paths so other scripts (monitoring, display toggles, audio scripts) don't need hard-coded paths.</p>
+    <div style="padding:14px 18px;">
+
+      <h3 style="margin:0 0 6px;font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">What the app does</h3>
+      <ul class="pcsetup-bullets">
+        <li><strong>setup.ps1</strong> — first-run installer. Uses winget + GitHub releases API + portable downloads to install ~70% of the stack unattended. Prompts user for the ~30% that's vendor-bound (FanaLab, iRacing, Stream Deck app, Trading Paints, Virtual Desktop). Generates all .bat scripts (display + audio) automatically.</li>
+        <li><strong>health-check.ps1</strong> — runnable any time. Probes every tool / config / file. Outputs <code>health.html</code> with ✅ / ⚠️ / ❌ per item, "Fix" buttons for repairable issues (re-copy controls.cfg, re-apply Gremlin profile, etc.).</li>
+        <li><strong>rig-config.json</strong> — single source of truth for per-PC paths. Read by all monitoring + setup scripts so we never hard-code <code>C:\Program Files (x86)\iRacing\</code>.</li>
+      </ul>
+
+      <h3 style="margin:14px 0 6px;font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">rig-config.json shape</h3>
+      <pre class="vjoy-code">{
+  "tools": {
+    "soundVolumeView": "C:\\Tools\\SoundVolumeView\\SoundVolumeView.exe",
+    "multiMonitorTool": "C:\\Tools\\MultiMonitorTool\\MultiMonitorTool.exe",
+    "presentMon": "C:\\Tools\\PresentMon\\PresentMon-1.10.0-x64.exe",
+    "hwinfo": "C:\\Program Files\\HWiNFO64\\HWiNFO64.exe",
+    "joystickGremlin": "C:\\Program Files (x86)\\Joystick Gremlin\\joystick_gremlin.exe",
+    "iRFFB": "C:\\Program Files\\iRFFB2022\\iRFFB.exe"
+  },
+  "games": {
+    "iRacing": {
+      "ui":          "C:\\Program Files (x86)\\iRacing\\iRacingUI.exe",
+      "sim":         "C:\\Program Files (x86)\\iRacing\\iRacingSim64DX11.exe",
+      "documents":   "%USERPROFILE%\\Documents\\iRacing",
+      "settings":    ["app.ini","rendererDX11.ini","dxconfig.ini"]
+    },
+    "PUBG": {
+      "exe":         "C:\\Program Files (x86)\\Steam\\steamapps\\common\\PUBG\\TslGame.exe",
+      "settings":    ["%LOCALAPPDATA%\\TslGame\\Saved\\Config\\WindowsNoEditor\\GameUserSettings.ini"]
+    }
+  },
+  "vr": {
+    "openXRToolkit":   "%APPDATA%\\OpenXR-Toolkit",
+    "virtualDesktop":  "C:\\Program Files\\Virtual Desktop Streamer\\VirtualDesktop.Streamer.Service.exe"
+  },
+  "displays": {
+    "topLeft":   "\\\\.\\DISPLAY2",
+    "topRight":  "\\\\.\\DISPLAY3",
+    "ultrawide": "\\\\.\\DISPLAY1"
+  },
+  "logs":  "C:\\Logs",
+  "deck": {
+    "appPath":     "C:\\Program Files\\Elgato\\StreamDeck\\StreamDeck.exe",
+    "profilesDir": "%APPDATA%\\Elgato\\StreamDeck\\ProfilesV2"
+  },
+  "audio": {
+    "discord":   "Discord",
+    "spotify":   "Spotify",
+    "iRacing":   "iRacingSim64DX11"
+  }
+}</pre>
+
+      <h3 style="margin:14px 0 6px;font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">What health-check.ps1 verifies</h3>
+      <table class="pcsetup-table">
+        <thead><tr><th>Category</th><th>Check</th><th>Method</th></tr></thead>
+        <tbody>
+          <tr><td>Tools installed</td><td>Each path in rig-config.json.tools resolves</td><td>Test-Path</td></tr>
+          <tr><td>vJoy</td><td>Device 1 enabled (buttons, no FFB) + Device 2 enabled (FFB on)</td><td>Registry: HKLM\SYSTEM\CurrentControlSet\services\vjoy\Parameters\DeviceN</td></tr>
+          <tr><td>HidHide</td><td>Whitelist contains JoystickGremlin.exe + iRacingSim64DX11.exe; Fanatec hidden</td><td>HidHide registry keys</td></tr>
+          <tr><td>Joystick Gremlin</td><td>Process running + correct profile loaded</td><td>Get-Process + parse Gremlin's last-used file</td></tr>
+          <tr><td>iRacing controls</td><td>controls.cfg matches canonical version (or diff acceptable)</td><td>SHA256 hash of controls.cfg vs bundle/controls.cfg.expected</td></tr>
+          <tr><td>FanaLab</td><td>3 expected profiles exist (GT3, LMP, Formula)</td><td>FanaLab profile dir scan</td></tr>
+          <tr><td>Stream Deck</td><td>All 6 profiles present (Home/PUBG/iRacing/Streaming/Audio/Display)</td><td>Stream Deck app config dir scan</td></tr>
+          <tr><td>Display IDs</td><td>3 monitors connected, IDs match rig-config</td><td>MultiMonitorTool list output</td></tr>
+          <tr><td>VR layer</td><td>OpenXR Toolkit settings.cfg present + Virtual Desktop service running</td><td>Test-Path + Get-Service</td></tr>
+          <tr><td>Audio sessions</td><td>Discord + Spotify visible to SoundVolumeView</td><td>SoundVolumeView listing</td></tr>
+        </tbody>
+      </table>
+
+      <h3 style="margin:14px 0 6px;font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">Why this matters for the monitoring script</h3>
+      <p class="pcsetup-hint">Today's <code>monitor-iracing.ps1</code> hard-codes paths like <code>C:\Program Files (x86)\iRacing\iRacingUI.exe</code>. With <code>rig-config.json</code>, the script reads the path at launch — works on any PC where the config is correct. Same for the graphics-settings snapshot: it walks <code>games.iRacing.settings</code> array and copies every file listed. Adding PUBG monitoring becomes trivial — just populate the <code>games.PUBG</code> entry and re-use the same script.</p>
+
+      <h3 style="margin:14px 0 6px;font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">Repo layout (when built)</h3>
+      <pre class="vjoy-code">streamdeck-config/
+├─ docs/                       # this docs site
+├─ scripts/
+│  ├─ setup.ps1                # one-time installer
+│  ├─ health-check.ps1         # any-time verifier
+│  ├─ monitor-iracing.ps1      # current monitor script (refactored to read rig-config.json)
+│  ├─ monitor-pubg.ps1
+│  └─ generate-report.ps1
+├─ bundle/                     # canonical configs to drop into place
+│  ├─ controls.cfg.expected
+│  ├─ fanatec-iracing.xml      # Gremlin profile
+│  ├─ FanaLab/                 # 3 profile exports
+│  ├─ StreamDeck/              # 6 .streamDeckProfile files
+│  ├─ scripts/                 # all the .bat files (display + audio)
+│  └─ openxr-toolkit.cfg       # known-good VR settings
+└─ rig-config.example.json     # template, user copies to rig-config.json and fills paths</pre>
+
+      <p class="pcsetup-hint">Status: <strong>design only — not built yet</strong>. Effort estimate: ~1 day for setup.ps1 + health-check.ps1 + refactoring monitor scripts to read rig-config.json. Decision pending: build it now, or finish the manual setup once first and only build the verifier?</p>
+    </div>
+  </details>
+
+  <details class="pcsetup-group">
+    <summary><h2 style="display:inline;">🏎 iRacing-specific setup (only if you race)</h2></summary>
+    <p class="pcsetup-hint">Wheel + sim software. Skip entirely if this PC isn't for racing.</p>
+  <ol class="pcsetup-steps">
+
+    <li class="pcsetup-step">
+      <h2><span class="pcsetup-num"></span> Fanatec hardware check + HID inventory</h2>
+      <ul class="pcsetup-bullets">
+        <li>Fanatec wheelbase powered, wheel attached, USB to PC. Open Windows <code>joy.cpl</code> → confirm "Fanatec ClubSport SW Formula V2.5" (or wheelbase name) shows up. Wiggle every control and watch buttons fire.</li>
+        <li>Note the raw HID button numbers per control (B1=#?, MPS-L pos 1=#?, ENC-L CW=#?). You'll need these when building the Gremlin profile.</li>
+      </ul>
+    </li>
+
+    <li class="pcsetup-step">
+      <h2><span class="pcsetup-num"></span> Install Fanatec stack</h2>
+      <ul class="pcsetup-bullets">
+        <li>Install <strong>Fanatec driver</strong> for your wheelbase. <a href="https://fanatec.com/eu-en/support/downloads" target="_blank">fanatec.com/support/downloads</a></li>
+        <li>Install <strong>FanaLab</strong> on top.</li>
+        <li>Run wheelbase firmware update if prompted. Don't skip — older firmware has different HID button numbering.</li>
+        <li>In FanaLab, create three profiles: <strong>GT3 / GTE</strong>, <strong>LMP / GTP</strong>, <strong>Formula</strong>. Settings per profile per the iRacing tab's FanaLab table.</li>
+        <li>Test FFB with <em>any</em> car in iRacing test session before continuing.</li>
+      </ul>
+    </li>
+
+    <li class="pcsetup-step">
+      <h2><span class="pcsetup-num"></span> Install vJoy + HidHide + Joystick Gremlin</h2>
+      <ul class="pcsetup-bullets">
+        <li>Install <strong>vJoy</strong> driver. <a href="https://sourceforge.net/projects/vjoystick/" target="_blank">sourceforge.net/projects/vjoystick</a><br>
+          Open <em>Configure vJoy</em> →
+          <ul>
+            <li><strong>Device 1</strong>: 128 buttons, 0 axes, 0 POVs, <em>Force Feedback OFF</em>. Apply. (Used by Joystick Gremlin for our wheel button mapping.)</li>
+            <li><strong>Device 2</strong>: 0 buttons, 1 axis (X), 0 POVs, <em>Force Feedback ON</em> (tick all FFB effect types). Apply. (Used by iRFFB 2022 — iRacing outputs FFB to this device, iRFFB intercepts and post-processes.)</li>
+          </ul>
+        </li>
+        <li>Install <strong>HidHide</strong>. <a href="https://github.com/nefarius/HidHide/releases" target="_blank">github.com/nefarius/HidHide</a><br>
+          Open HidHide Configuration:
+          <ul>
+            <li><em>Applications</em> tab: add <code>JoystickGremlin.exe</code> (so Gremlin sees the raw wheel) AND add <code>iRacingSim64DX11.exe</code> + <code>iRacingUI.exe</code> (so iRacing sees only vJoy).</li>
+            <li><em>Devices</em> tab: tick "Hide" next to your Fanatec wheelbase entry. Tick "Enable device hiding" at top.</li>
+          </ul>
+        </li>
+        <li>Install <strong>Joystick Gremlin</strong>. <a href="https://whitemagic.github.io/JoystickGremlin/" target="_blank">whitemagic.github.io/JoystickGremlin</a></li>
+        <li>Confirm in <code>joy.cpl</code>: you should now see <strong>vJoy Device</strong> AND no longer see Fanatec (because HidHide hid it from joy.cpl too).</li>
+      </ul>
+    </li>
+
+    <li class="pcsetup-step">
+      <h2><span class="pcsetup-num"></span> Build the Joystick Gremlin profile</h2>
+      <p class="pcsetup-hint">This is the brain of the whole rig. Save the profile as <code>fanatec-iracing.xml</code> and back it up.</p>
+      <ol class="pcsetup-substeps">
+        <li><strong>Add inputs</strong>: Gremlin → File → New profile. Add Fanatec wheel as input device, vJoy Device 1 as output.</li>
+        <li><strong>1:1 base mapping</strong>: in Default mode, route every physical Fanatec button to a vJoy button (e.g. raw #1 → vJoy 1, raw #2 → vJoy 2, ...). Use Gremlin's "Map to vJoy button" action.</li>
+        <li><strong>Create 12 modes</strong> for the MPS-L context: name them <code>MPS-L-pos1</code> … <code>MPS-L-pos12</code>. (Profile menu → Edit modes → Add.)</li>
+        <li><strong>Wire mode switching</strong>: each MPS-L position button gets a "Switch mode" action targeting its matching mode (latched, NOT held). MPS-L pos 1 button → switch to <code>MPS-L-pos1</code>, etc.</li>
+        <li><strong>Per-mode ENC-L routing</strong>: in each MPS-L-posN mode, override ENC-L CW and CCW to fire a unique vJoy button:
+          <table class="pcsetup-table" style="margin-top:8px;">
+            <thead><tr><th>Mode</th><th>ENC-L CW → vJoy</th><th>ENC-L CCW → vJoy</th><th>Bound in</th></tr></thead>
+            <tbody>
+              <tr><td>pos1 (Fuel Mix)</td><td>71</td><td>72</td><td>iRacing — Fuel Mixture inc / dec</td></tr>
+              <tr><td>pos2 (TC2)</td><td>73</td><td>74</td><td>iRacing — TC2 Slip Angle inc / dec</td></tr>
+              <tr><td>pos3 (Diff Entry)</td><td>75</td><td>76</td><td>iRacing — Diff Entry inc / dec</td></tr>
+              <tr><td>pos4 (Diff Mid)</td><td>77</td><td>78</td><td>iRacing — Diff Middle inc / dec</td></tr>
+              <tr><td>pos5 (Diff Exit)</td><td>79</td><td>80</td><td>iRacing — Diff Exit inc / dec</td></tr>
+              <tr><td>pos6 (FFB)</td><td>81</td><td>82</td><td>iRacing — Force Feedback Strength inc / dec</td></tr>
+              <tr><td>pos7 (In-car Vol)</td><td>83</td><td>84</td><td>iRacing — In-car Volume inc / dec</td></tr>
+              <tr><td>pos8 (Spotter Vol)</td><td>85</td><td>86</td><td>iRacing — Spotter Volume inc / dec</td></tr>
+              <tr><td>pos9 (Brake Migration)</td><td>87</td><td>88</td><td>iRacing — Brake Migration inc / dec</td></tr>
+              <tr><td>pos10 (Discord vol)</td><td colspan="2"><em>Run program</em> action — see step 6</td><td>OS (no app binding)</td></tr>
+              <tr><td>pos11 (Spotify vol)</td><td colspan="2"><em>Run program</em> action — see step 6</td><td>OS (no app binding)</td></tr>
+              <tr><td>pos12 (Game master vol)</td><td colspan="2"><em>Run program</em> action — see step 6</td><td>OS (no app binding)</td></tr>
+            </tbody>
+          </table>
+        </li>
+        <li><strong>Special outputs (NOT vJoy buttons)</strong> — these go to other targets:
+          <table class="pcsetup-table" style="margin-top:8px;">
+            <thead><tr><th>Physical control</th><th>Gremlin action</th><th>Bound in</th></tr></thead>
+            <tbody>
+              <tr><td>B7 ← / → / ↑ / ↓ (held)</td><td>Mouse motion (continuous while held; speed ~400 px/s)</td><td>OS — no binding</td></tr>
+              <tr><td>B7 push</td><td>Mouse button — Left Click</td><td>OS — no binding</td></tr>
+              <tr><td>TOG-L (Discord PTT)</td><td>Map to vJoy button 91 (or keyboard F13)</td><td>Discord — see step 8</td></tr>
+              <tr><td>TOG-R (Crew Chief talk)</td><td>Map to vJoy button 92 (or keyboard F14)</td><td>Crew Chief — see step 8</td></tr>
+            </tbody>
+          </table>
+          <p class="pcsetup-hint" style="margin-top:6px;">Use vJoy buttons if Discord/CC see the vJoy device; fall back to keyboard F13/F14 if they only accept keys (older Discord versions or some CC builds).</p>
+        </li>
+        <li><strong>Save + activate</strong>: File → Save. Tick "Activate profile". Set Gremlin to start with Windows.</li>
+      </ol>
+    </li>
+
+    <li class="pcsetup-step">
+      <h2><span class="pcsetup-num"></span> Install iRFFB 2022 (force-feedback post-processor)</h2>
+      <ul class="pcsetup-bullets">
+        <li>Download <strong>iRFFB 2022</strong> from <a href="https://github.com/blarghedy/iRFFB2022/releases" target="_blank">github.com/blarghedy/iRFFB2022/releases</a> → install.</li>
+        <li>In iRFFB: <em>Wheel/joystick</em> → select your real Fanatec wheel. <em>vJoy device</em> → Device 2 (configured in step 4 with FFB ON).</li>
+        <li>Set <strong>damping / spring / friction → 0%</strong> (iRFFB does these in software).</li>
+        <li>Set <strong>strength</strong> per-car (per iRFFB community presets — GT3 around 25–35 Nm equivalent on a CSL DD).</li>
+        <li>In iRacing → Options → Drive → <strong>Force Feedback</strong>: tick "Use linear mode", set <em>strength</em> per car, set <em>device</em> = <strong>vJoy Device 2</strong> (so iRacing's FFB output goes to iRFFB, not directly to the wheel).</li>
+        <li>iRFFB must be running BEFORE you launch iRacing — the monitor script (next step) doesn't currently start it. Add it manually to startup or include it in your pre-flight routine.</li>
+        <li>Test in any practice session — feel for the curb / road texture iRFFB adds. If it feels worse than stock, iRFFB strength is probably too high.</li>
+      </ul>
+    </li>
+
+    <li class="pcsetup-step">
+      <h2><span class="pcsetup-num"></span> OS-level audio scripts (MPS-L pos 10–12)</h2>
+      <p class="pcsetup-hint">Install <strong>SoundVolumeView</strong> first: <a href="https://www.nirsoft.net/utils/sound_volume_view.html" target="_blank">nirsoft.net</a> → drop <code>SoundVolumeView.exe</code> into <code>C:\Tools\SoundVolumeView\</code>. Then create six tiny .bat files Gremlin will shell out to:</p>
+      <pre class="vjoy-code">REM discord-up.bat
+"C:\Tools\SoundVolumeView\SoundVolumeView.exe" /ChangeVolume "Discord" +5
+
+REM discord-down.bat
+"C:\Tools\SoundVolumeView\SoundVolumeView.exe" /ChangeVolume "Discord" -5
+
+REM spotify-up.bat   /  spotify-down.bat   (same pattern with "Spotify")
+REM iracing-up.bat   /  iracing-down.bat   (same with "iRacingSim64DX11")</pre>
+      <p class="pcsetup-hint">In Gremlin, in mode <code>MPS-L-pos10</code>: ENC-L CW → "Run program" action → <code>discord-up.bat</code>. ENC-L CCW → <code>discord-down.bat</code>. Repeat for pos 11 (Spotify) and pos 12 (iRacing).</p>
+    </li>
+
+    <li class="pcsetup-step">
+      <h2><span class="pcsetup-num"></span> Bind iRacing controls</h2>
+      <p class="pcsetup-hint">Launch iRacing → Options → Controls → Reset all (if migrating). Then bind exactly per the table below. The "Bind to" column = the input you press in iRacing's "Press a key/button" prompt.</p>
+      <table class="pcsetup-table">
+        <thead><tr><th>iRacing function</th><th>Bind to</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td colspan="3" style="background:var(--bg);font-weight:600;color:var(--cat-teal);">Direct (no Gremlin trickery)</td></tr>
+          <tr><td>Brake Bias inc / dec</td><td>ENC-R CW / CCW</td><td>Always direct — most-used adjustment</td></tr>
+          <tr><td>TC Level set 1 … 12</td><td>MPS-R positions 1–12</td><td>OR bind TC inc/dec to two adjacent positions and leave the rest spare</td></tr>
+          <tr><td>ERS Deploy Mode next / prev</td><td>UPDN-L up / down</td><td>For GTP / hybrid cars</td></tr>
+          <tr><td>Black Box (cycle next / prev)</td><td>UPDN-R up / down</td><td>Cycles between MFD pages</td></tr>
+          <tr><td>Black Box row up / down</td><td>B8 ↑ / ↓</td><td>Right joystick — within current box</td></tr>
+          <tr><td>Black Box tab left / right</td><td>B8 ← / →</td><td>Right joystick — within current box</td></tr>
+          <tr><td>Black Box click / select</td><td>B8 push</td><td>Right joystick click</td></tr>
+          <tr><td>Push-to-talk (in-game)</td><td>B1</td><td>iRacing's text-radio voice</td></tr>
+          <tr><td>Voice channel volume up / down</td><td>B2 / B3</td><td>iRacing in-game radio channel volume</td></tr>
+          <tr><td>Wiper / Tear-off</td><td>B4</td><td></td></tr>
+          <tr><td>Headlights flash</td><td>B5</td><td></td></tr>
+          <tr><td>Speed limiter (pit)</td><td>B6</td><td></td></tr>
+          <tr><td>OLED dash page cycle</td><td>B9</td><td>Hardware dash on the wheelbase</td></tr>
+          <tr><td>Center view / Reset VR pose</td><td>B10</td><td>Critical in VR — must be reachable by feel</td></tr>
+          <tr><td>Spare (assign per car in FanaLab)</td><td>B11</td><td>Pit Request / ERS deploy / etc.</td></tr>
+          <tr><td>FunkySwitch ↑↓←→</td><td>—</td><td>Spare — your choice (see iRacing tab)</td></tr>
+          <tr><td>FunkySwitch rotary CW / CCW</td><td>iRating / SoF cycle</td><td>Or leaderboard cycle</td></tr>
+          <tr><td colspan="3" style="background:var(--bg);font-weight:600;color:var(--cat-teal);">Context-driven (vJoy buttons from step 5)</td></tr>
+          <tr><td>Fuel Mixture inc / dec</td><td>vJoy 71 / 72</td><td>Active when MPS-L = pos 1</td></tr>
+          <tr><td>TC2 Slip Angle inc / dec</td><td>vJoy 73 / 74</td><td>MPS-L = pos 2 (LMP2/LMDh only)</td></tr>
+          <tr><td>Diff Entry / Mid / Exit</td><td>vJoy 75/76, 77/78, 79/80</td><td>MPS-L = pos 3, 4, 5</td></tr>
+          <tr><td>FFB Strength inc / dec</td><td>vJoy 81 / 82</td><td>MPS-L = pos 6</td></tr>
+          <tr><td>In-car Volume inc / dec</td><td>vJoy 83 / 84</td><td>MPS-L = pos 7</td></tr>
+          <tr><td>Spotter Volume inc / dec</td><td>vJoy 85 / 86</td><td>MPS-L = pos 8</td></tr>
+          <tr><td>Brake Migration inc / dec</td><td>vJoy 87 / 88</td><td>MPS-L = pos 9</td></tr>
+        </tbody>
+      </table>
+      <p class="pcsetup-hint">Test: each MPS-L click should NOT cause any in-game effect on its own — only ENC-L should, and what it does should change as MPS-L moves.</p>
+    </li>
+
+    <li class="pcsetup-step">
+      <h2><span class="pcsetup-num"></span> Bind external apps (Discord, Crew Chief)</h2>
+      <p class="pcsetup-hint">These don't go through iRacing — Discord and CC have their own input bindings.</p>
+      <h3 style="margin:14px 0 6px;font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">Discord — TOG-L = push-to-talk</h3>
+      <ol class="pcsetup-substeps">
+        <li>Discord → Settings → Voice &amp; Video → <em>Input Mode = Push to Talk</em>.</li>
+        <li>Click "Edit Keybind" under "Shortcut" → press TOG-L on the wheel. Discord should register it as "vJoy Button 91" (or your chosen vJoy button #).</li>
+        <li>If Discord doesn't accept vJoy buttons (some builds don't): change Gremlin's TOG-L action to keyboard <code>F13</code>, then bind <code>F13</code> in Discord.</li>
+        <li>Set "Push to Talk Release Delay" to 100–200 ms so the tail of your sentence isn't cut off.</li>
+      </ol>
+      <h3 style="margin:14px 0 6px;font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">Crew Chief — TOG-R = push-to-listen</h3>
+      <ol class="pcsetup-substeps">
+        <li>Open Crew Chief → Properties (gear icon) → search "voice".</li>
+        <li>Set <strong>Voice recognition mode</strong> = <em>"Hold button"</em> (CC listens only while button held — avoids accidental triggers from team comms).</li>
+        <li>Click <strong>Voice recognition button</strong> → press TOG-R on the wheel. Should register as vJoy button #92 (or whatever you chose). Fall back to <code>F14</code> if needed.</li>
+        <li>Save and restart CC.</li>
+        <li>Verify: hold TR, say "what's my fuel?" — CC should respond.</li>
+      </ol>
+      <p class="pcsetup-hint">CC's full command list is in its docs — common ones: <em>fuel</em>, <em>gap ahead</em>, <em>gap behind</em>, <em>where am I</em>, <em>last lap</em>, <em>best lap</em>, <em>tyre wear</em>, <em>spotter on/off</em>.</p>
+    </li>
+
+    <li class="pcsetup-step">
+      <h2><span class="pcsetup-num"></span> System monitoring &amp; profiling — monitored launch</h2>
+      <p class="pcsetup-hint">Wraps iRacing in a PowerShell launcher that captures HWiNFO sensors, PresentMon frame data, top-15 process CPU/RAM, and snapshots iRacing's graphics .ini files + OpenXR Toolkit config — all auto-collected for the duration of the session, with an HTML report opened on game exit.</p>
+
+      <h3 style="margin:14px 0 6px;font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">Tools to install</h3>
+      <table class="pcsetup-table">
+        <thead><tr><th>Tool</th><th>Path</th><th>Source</th></tr></thead>
+        <tbody>
+          <tr><td>PresentMon</td><td><code>C:\Tools\PresentMon\</code></td><td><a href="https://github.com/GameTechDev/PresentMon/releases" target="_blank">github.com/GameTechDev/PresentMon</a></td></tr>
+          <tr><td>HWiNFO64</td><td><code>C:\Program Files\HWiNFO64\</code> (default)</td><td><a href="https://www.hwinfo.com/download/" target="_blank">hwinfo.com</a></td></tr>
+          <tr><td>OpenXR Toolkit</td><td>auto (runtime layer)</td><td><a href="https://mbucchia.github.io/OpenXR-Toolkit/" target="_blank">mbucchia.github.io</a> (already installed)</td></tr>
+          <tr><td>Virtual Desktop</td><td><code>C:\Program Files\Virtual Desktop Streamer\</code></td><td><a href="https://www.vrdesktop.net/" target="_blank">vrdesktop.net</a> (already installed)</td></tr>
+        </tbody>
+      </table>
+      <p class="pcsetup-hint">In HWiNFO64 → Settings → Logging: enable CSV logging output, sample rate 1000 ms.</p>
+
+      <h3 style="margin:14px 0 6px;font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">The launcher script</h3>
+      <p class="pcsetup-hint">Save as <code>C:\Tools\Monitoring\monitor-iracing.ps1</code>. Adjust paths as needed.</p>
+      <pre class="vjoy-code"># monitor-iracing.ps1 — wraps an iRacing session with full telemetry capture
+# Run via:  powershell -ExecutionPolicy Bypass -File C:\Tools\Monitoring\monitor-iracing.ps1
+
+$ErrorActionPreference = 'Continue'
+$timestamp = Get-Date -Format 'yyyy-MM-dd_HHmm'
+$logDir    = "C:\Logs\iracing\$timestamp"
+$tools     = "C:\Tools"
+New-Item -ItemType Directory -Force -Path $logDir | Out-Null
+
+Write-Host "[monitor] session: $timestamp" -ForegroundColor Cyan
+Write-Host "[monitor] log dir: $logDir"
+
+# 1. SNAPSHOT graphics + VR settings
+$iRacingDocs = "$env:USERPROFILE\Documents\iRacing"
+foreach ($f in @('app.ini','rendererDX11.ini','dxconfig.ini')) {
+  if (Test-Path "$iRacingDocs\$f") {
+    Copy-Item "$iRacingDocs\$f" "$logDir\$f.snapshot"
+  }
+}
+if (Test-Path "$env:APPDATA\OpenXR-Toolkit\settings.cfg") {
+  Copy-Item "$env:APPDATA\OpenXR-Toolkit\settings.cfg" "$logDir\openxr-toolkit.cfg.snapshot"
+}
+# Snapshot active iRacing setups dir (last-modified .sto files)
+$setupsDir = "$iRacingDocs\setups"
+if (Test-Path $setupsDir) {
+  Get-ChildItem $setupsDir -Recurse -Filter "*.sto" |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 10 |
+    ForEach-Object { Copy-Item $_.FullName "$logDir\setup-$($_.Name)" }
+}
+
+# 2. START HWiNFO64 with CSV logging (background)
+Start-Process "C:\Program Files\HWiNFO64\HWiNFO64.exe" `
+  -ArgumentList "/log=$logDir\hwinfo.csv" -WindowStyle Minimized
+
+# 3. START PresentMon (auto-attaches to iRacingSim64DX11.exe when it starts)
+$presentMonExe = Get-ChildItem "$tools\PresentMon\PresentMon-*-x64.exe" | Select-Object -First 1
+Start-Process $presentMonExe.FullName `
+  -ArgumentList "-process_name iRacingSim64DX11.exe -output_file `"$logDir\presentmon.csv`" -terminate_on_proc_exit -no_top" `
+  -WindowStyle Hidden
+
+# 4. BACKGROUND POLLER — top processes every 5s
+$pollerJob = Start-Job -ScriptBlock {
+  param($logFile)
+  "timestamp,process,cpu_percent,ram_bytes" | Out-File $logFile
+  while ($true) {
+    $now = Get-Date -Format 'HH:mm:ss'
+    Get-Process | Where-Object { $_.WorkingSet64 -gt 50MB } |
+      Sort-Object WorkingSet64 -Descending | Select-Object -First 15 |
+      ForEach-Object {
+        try {
+          $cpuSample = Get-Counter "\Process($($_.ProcessName))\% Processor Time" -ErrorAction Stop
+          $cpu = [math]::Round($cpuSample.CounterSamples[0].CookedValue, 2)
+        } catch { $cpu = 0 }
+        "$now,$($_.ProcessName),$cpu,$($_.WorkingSet64)" | Out-File $logFile -Append
+      }
+    Start-Sleep -Seconds 5
+  }
+} -ArgumentList "$logDir\processes.csv"
+
+# 5. LAUNCH iRacing UI
+$iRacingUI = Start-Process "C:\Program Files (x86)\iRacing\iRacingUI.exe" -PassThru
+Write-Host "[monitor] iRacing launched (PID $($iRacingUI.Id))" -ForegroundColor Green
+
+# 6. WAIT for entire iRacing process tree to exit
+Start-Sleep -Seconds 30  # let iRacing actually start
+while ((Get-Process iRacingSim64DX11 -ErrorAction SilentlyContinue) -or `
+       (Get-Process iRacingUI -ErrorAction SilentlyContinue)) {
+  Start-Sleep -Seconds 5
+}
+Write-Host "[monitor] iRacing exited; cleaning up" -ForegroundColor Yellow
+
+# 7. CLEANUP
+Stop-Job $pollerJob; Remove-Job $pollerJob
+Stop-Process -Name HWiNFO64 -Force -ErrorAction SilentlyContinue
+Stop-Process -Name PresentMon* -Force -ErrorAction SilentlyContinue
+
+# 8. GENERATE REPORT
+& "$tools\Monitoring\generate-report.ps1" -LogDir $logDir
+Start-Process "$logDir\report.html"
+Write-Host "[monitor] report opened: $logDir\report.html" -ForegroundColor Cyan</pre>
+
+      <h3 style="margin:14px 0 6px;font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">The report generator</h3>
+      <p class="pcsetup-hint">Save as <code>C:\Tools\Monitoring\generate-report.ps1</code>. Produces a single self-contained HTML file with Chart.js (CDN) charts.</p>
+      <pre class="vjoy-code">param([Parameter(Mandatory)][string]$LogDir)
+
+# Parse processes.csv → top consumers
+$procs = Import-Csv "$LogDir\processes.csv"
+$topByCpu = $procs | Group-Object process | ForEach-Object {
+  [PSCustomObject]@{
+    Name    = $_.Name
+    AvgCpu  = ($_.Group.cpu_percent | Measure-Object -Average).Average
+    PeakCpu = ($_.Group.cpu_percent | Measure-Object -Maximum).Maximum
+    AvgRam  = ($_.Group.ram_bytes   | Measure-Object -Average).Average / 1MB
+  }
+} | Sort-Object PeakCpu -Descending | Select-Object -First 15
+
+# Parse PresentMon for FPS / frametime
+$frames = @()
+if (Test-Path "$LogDir\presentmon.csv") {
+  $frames = Import-Csv "$LogDir\presentmon.csv"
+  $msPerFrame = $frames.MsBetweenPresents | ForEach-Object { [double]$_ }
+  $avgFps    = if ($msPerFrame.Count -gt 0) { [math]::Round(1000 / ($msPerFrame | Measure-Object -Average).Average, 1) } else { 0 }
+  $sortedMs  = $msPerFrame | Sort-Object
+  $p99       = if ($sortedMs.Count -gt 0) { $sortedMs[[int]($sortedMs.Count * 0.99)] } else { 0 }
+  $stutters  = ($msPerFrame | Where-Object { $_ -gt 33 }).Count   # frames > 33ms = below 30 FPS
+}
+
+# Parse iRacing app.ini for graphics settings
+$iniSettings = @{}
+if (Test-Path "$LogDir\app.ini.snapshot") {
+  Get-Content "$LogDir\app.ini.snapshot" | ForEach-Object {
+    if ($_ -match '^\s*([^=;\s]+)\s*=\s*(.+)$') {
+      $iniSettings[$matches[1]] = $matches[2].Trim()
+    }
+  }
+}
+$keysOfInterest = @('Resolution','MultiSamples','MaxQuality','MirrorHigh','ShadowMaps','Particles','EventDistance')
+$gfxSummary = $keysOfInterest | ForEach-Object {
+  if ($iniSettings.ContainsKey($_)) {
+    [PSCustomObject]@{ Setting = $_; Value = $iniSettings[$_] }
+  }
+}
+
+# Build HTML
+$html = @"
+&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta charset='utf-8'&gt;
+&lt;title&gt;iRacing session report — $(Split-Path $LogDir -Leaf)&lt;/title&gt;
+&lt;script src='https://cdn.jsdelivr.net/npm/chart.js'&gt;&lt;/script&gt;
+&lt;style&gt;
+body{font-family:system-ui;background:#0a0d12;color:#e0e0e0;padding:24px;max-width:1200px;margin:auto}
+h1,h2{color:#5a8;border-bottom:1px solid #333;padding-bottom:6px}
+table{border-collapse:collapse;width:100%;margin:12px 0}
+th,td{text-align:left;padding:6px 12px;border-bottom:1px solid #222}
+th{color:#888;font-size:12px;text-transform:uppercase}
+.metric{display:inline-block;background:#1a2030;padding:12px 18px;border-radius:8px;margin:6px}
+.metric .v{font-size:24px;font-weight:700;color:#5a8}
+.metric .l{font-size:11px;color:#888;text-transform:uppercase}
+canvas{background:#1a1d22;border-radius:8px;padding:12px;margin:12px 0}
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;h1&gt;iRacing session — $(Split-Path $LogDir -Leaf)&lt;/h1&gt;
+
+&lt;div&gt;
+  &lt;div class='metric'&gt;&lt;div class='v'&gt;$avgFps&lt;/div&gt;&lt;div class='l'&gt;Avg FPS&lt;/div&gt;&lt;/div&gt;
+  &lt;div class='metric'&gt;&lt;div class='v'&gt;$([math]::Round($p99,1)) ms&lt;/div&gt;&lt;div class='l'&gt;P99 frametime&lt;/div&gt;&lt;/div&gt;
+  &lt;div class='metric'&gt;&lt;div class='v'&gt;$stutters&lt;/div&gt;&lt;div class='l'&gt;Stutters (&gt;33ms)&lt;/div&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;h2&gt;Top processes by peak CPU&lt;/h2&gt;
+&lt;table&gt;&lt;tr&gt;&lt;th&gt;Process&lt;/th&gt;&lt;th&gt;Peak CPU %&lt;/th&gt;&lt;th&gt;Avg CPU %&lt;/th&gt;&lt;th&gt;Avg RAM (MB)&lt;/th&gt;&lt;/tr&gt;
+$($topByCpu | ForEach-Object { "&lt;tr&gt;&lt;td&gt;$($_.Name)&lt;/td&gt;&lt;td&gt;$([math]::Round($_.PeakCpu,1))&lt;/td&gt;&lt;td&gt;$([math]::Round($_.AvgCpu,1))&lt;/td&gt;&lt;td&gt;$([math]::Round($_.AvgRam,0))&lt;/td&gt;&lt;/tr&gt;" })
+&lt;/table&gt;
+
+&lt;h2&gt;Graphics settings (from app.ini snapshot)&lt;/h2&gt;
+&lt;table&gt;&lt;tr&gt;&lt;th&gt;Setting&lt;/th&gt;&lt;th&gt;Value&lt;/th&gt;&lt;/tr&gt;
+$($gfxSummary | ForEach-Object { "&lt;tr&gt;&lt;td&gt;$($_.Setting)&lt;/td&gt;&lt;td&gt;$($_.Value)&lt;/td&gt;&lt;/tr&gt;" })
+&lt;/table&gt;
+
+&lt;h2&gt;Frametime over session&lt;/h2&gt;
+&lt;canvas id='frametime' height='80'&gt;&lt;/canvas&gt;
+&lt;script&gt;
+const ms = $((($msPerFrame | Select-Object -First 5000) -join ',') -replace '^,','');
+new Chart(document.getElementById('frametime'), {
+  type: 'line',
+  data: { labels: ms.map((_,i)=&gt;i), datasets: [{ label:'ms', data: ms, borderColor:'#5a8', borderWidth:1, pointRadius:0 }] },
+  options: { animation:false, scales:{ y:{ suggestedMin:0, suggestedMax:50 } } }
+});
+&lt;/script&gt;
+
+&lt;h2&gt;Files in this session&lt;/h2&gt;
+&lt;ul&gt;
+$($snapshots = Get-ChildItem $LogDir | ForEach-Object { "&lt;li&gt;&lt;code&gt;$($_.Name)&lt;/code&gt; ($([math]::Round($_.Length/1KB,1)) KB)&lt;/li&gt;" })
+$snapshots
+&lt;/ul&gt;
+
+&lt;/body&gt;&lt;/html&gt;
+"@
+
+$html | Out-File "$LogDir\report.html" -Encoding utf8
+Write-Host "[report] generated: $LogDir\report.html" -ForegroundColor Cyan</pre>
+
+      <h3 style="margin:14px 0 6px;font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">Wire to Stream Deck</h3>
+      <ul class="pcsetup-bullets">
+        <li>The iRacing profile's <strong>iRacing 📊</strong> cell uses System: Open with target: <code>powershell.exe -ExecutionPolicy Bypass -File C:\Tools\Monitoring\monitor-iracing.ps1</code></li>
+        <li>This <em>replaces</em> the plain "iRacing" Advanced Launcher cell — same launch UX, just instrumented.</li>
+        <li>Optionally add a second cell "Last report" → System: Open pointed at a tiny .bat that opens the most recent <code>C:\Logs\iracing\*\report.html</code>.</li>
+      </ul>
+
+      <p class="pcsetup-hint">Same pattern works for PUBG — duplicate the script as <code>monitor-pubg.ps1</code>, swap the iRacing-specific paths/process names, and add a corresponding cell to the PUBG profile. PUBG's graphics settings live in <code>%LOCALAPPDATA%\TslGame\Saved\Config\WindowsNoEditor\GameUserSettings.ini</code> — same parsing approach.</p>
+    </li>
+
+    <li class="pcsetup-step">
+      <h2><span class="pcsetup-num"></span> Stream Deck — iRacing profile additions</h2>
+      <ul class="pcsetup-bullets">
+        <li>Build the <strong>iRacing profile</strong> (see iRacing tab) — pit macros, launchers for iRacing/Crew Chief/SimHub/Trading Paints, OBS Clip, Home cell.</li>
+        <li>Pre-flight cells use Advanced Launcher with the .exe path on your machine — set these per-PC (paths differ).</li>
+        <li>OBS Clip cell: in OBS, enable Settings → Output → Replay Buffer → 60 s. Bind "Save Replay" hotkey to whatever the Stream Deck OBS plugin sends.</li>
+      </ul>
+    </li>
+
+    <li class="pcsetup-step">
+      <h2><span class="pcsetup-num"></span> iRacing-specific backup additions</h2>
+      <p class="pcsetup-hint">On top of the base bundle, these need preserving for a quick rebuild:</p>
+      <ul class="pcsetup-bullets">
+        <li><code>fanatec-iracing.xml</code> — Joystick Gremlin profile</li>
+        <li><code>controls.cfg</code> + <code>app.ini</code> from <code>Documents\iRacing\</code></li>
+        <li>FanaLab profile exports (3 files: GT3, LMP/GTP, Formula)</li>
+        <li><code>C:\Tools\SoundVolumeView\</code> folder (incl. all 6 .bat files)</li>
+        <li>HidHide whitelist screenshot (faster than reproducing manually)</li>
+        <li>Crew Chief settings folder (auto-saved, just copy)</li>
+      </ul>
+      <p class="pcsetup-hint">New PC: do the entire Base group first (above), then this iRacing group, importing the .xml + controls.cfg instead of rebuilding from scratch. ~1 hour for both.</p>
+    </li>
+
+  </ol>
+  </details>
+</section>
+
+<section id="setup">
+  <h1>Setup checklist</h1>
+  <p class="lede">Everything needed to rebuild this from scratch.</p>
+  <div class="checklist-grid" id="checklist"></div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <span>Bindings live in <code>docs/index.html</code> as inline JSON. Edit, refresh, commit.</span>
+  <span style="margin-left: 12px;">Last edited: <code id="last-edited">—</code></span>
+</footer>
+
+<!-- ============================================================== -->
+<!-- DATA                                                            -->
+<!-- All bindings live below as JSON inside <script type="json">.    -->
+<!-- Edit a block, refresh the page. The diff is your changelog.     -->
+<!--                                                                 -->
+<!-- Glyphs use plain Unicode symbols (not emoji) so they render      -->
+<!-- the same on Windows / Mac / Linux.                               -->
+<!-- ============================================================== -->
+
+<!-- ====================== STREAM DECK :: HOME ====================== -->
+<script id="data-streamdeck-home" type="application/json">
+{
+  "rows": 3, "cols": 5,
+  "cells": [
+    { "label": "iRacing",      "glyph": "▶",  "cat": "blue",   "type": "folder", "target": "iracing",   "plugin": "System: Switch Profile (built-in)", "notes": "Switches to the iRacing profile." },
+    { "label": "PUBG",         "icon": "crosshair", "glyph": "▶",  "cat": "green",  "type": "folder", "target": "pubg",      "plugin": "System: Switch Profile (built-in)", "notes": "Switches to the PUBG profile." },
+    { "label": "Streaming",    "glyph": "▶",  "cat": "purple", "type": "folder", "target": "streaming", "plugin": "System: Switch Profile (built-in)", "notes": "Switches to the Streaming profile." },
+    { "label": "Audio",        "icon": "eq",  "glyph": "♪",  "cat": "teal",   "type": "folder", "target": "audio",     "plugin": "System: Switch Profile (built-in)", "notes": "Switches to the Audio profile (EQ presets, mute, volume, Spotify, audio routing)." },
+    { "label": "Display",      "glyph": "▢",  "cat": "blue",   "type": "folder", "target": "display",   "plugin": "System: Switch Profile (built-in)", "notes": "Switches to the Display profile — toggle individual monitors, presets for VR / Work / All-off." },
+
+    { "label": "OBS Live",     "icon": "live",     "glyph": "●",  "cat": "red",    "type": "obs",     "plugin": "OBS Studio (Elgato)",          "notes": "Toggle stream — but separate Go Live / End Stream live in the Streaming folder." },
+    { "label": "OBS Clip",     "icon": "scissors", "glyph": "✂",  "cat": "purple", "type": "obs",     "plugin": "OBS Studio (Elgato)",          "notes": "Save replay buffer. Requires replay buffer enabled in OBS." },
+    { "label": "Discord",      "glyph": "▣",  "cat": "purple", "type": "open",                     "plugin": "Advanced Launcher (BarRaider)",  "notes": "Bring Discord to focus (or launch if not running)." },
+    { "label": "VOL −",        "icon": "volDown", "glyph": "−",  "cat": "teal",   "type": "volume",  "plugin": "Volume Controller (Elgato)",    "notes": "System master volume down." },
+    { "label": "VOL +",        "icon": "volUp",   "glyph": "+",  "cat": "teal",   "type": "volume",  "plugin": "Volume Controller (Elgato)",    "notes": "System master volume up." },
+
+    { "label": "Mic Mute",     "icon": "micMute",  "glyph": "⊘",  "cat": "red",    "type": "discord", "plugin": "Discord (Elgato)",             "notes": "Discord mute. Cell reflects Discord's actual mute state." },
+    { "label": "Disc VOL −",   "icon": "discDown", "glyph": "−",  "cat": "teal",   "type": "volume",  "plugin": "Volume Controller (Elgato)",   "notes": "Discord per-app volume down." },
+    { "label": "Disc VOL +",   "icon": "discUp",   "glyph": "+",  "cat": "teal",   "type": "volume",  "plugin": "Volume Controller (Elgato)",   "notes": "Discord per-app volume up." },
+    { "label": "",             "glyph": "",   "cat": "empty",  "type": "empty",  "notes": "Reserved." },
+    { "label": "Sleep",        "glyph": "☾",  "cat": "amber",  "type": "system", "plugin": "System: Power (built-in)", "notes": "Sleep PC." }
+  ]
+}
+</script>
+
+<!-- ====================== STREAM DECK :: PUBG ====================== -->
+<script id="data-streamdeck-pubg" type="application/json">
+{
+  "rows": 3, "cols": 5,
+  "cells": [
+    { "label": "PUBG",         "icon": "crosshair", "glyph": "▶",  "cat": "green",  "type": "launcher", "app": "PUBG", "plugin": "Advanced Launcher (BarRaider)", "notes": "Launch PUBG via Steam." },
+    { "label": "PUBG EQ",      "icon": "eq",        "glyph": "EQ", "cat": "teal",   "type": "hotkey",   "plugin": "System: Hotkey (built-in)",     "notes": "SteelSeries GG hotkey → PUBG EQ. Duplicated here as a safety net before queueing." },
+    { "label": "Mic Mute",     "icon": "micMute",   "glyph": "⊘",  "cat": "red",    "type": "discord",  "plugin": "Discord (Elgato)",              "notes": "Discord mute — reflects Discord's actual mute state. Mid-match reach." },
+    { "label": "OBS Clip",     "icon": "scissors",  "glyph": "✂",  "cat": "purple", "type": "obs",      "plugin": "OBS Studio (Elgato)",           "notes": "Save 60–90 s replay buffer to disk. Same OBS instance receives this from any profile." },
+    { "label": "OBS Live",     "icon": "live",      "glyph": "●",  "cat": "red",    "type": "obs",      "plugin": "OBS Studio (Elgato)",           "notes": "Toggle stream — but separate Go Live / End Stream cells live in the Streaming profile." },
+
+    { "label": "Disc VOL −",   "icon": "discDown",  "glyph": "−",  "cat": "teal",   "type": "volume",   "plugin": "Volume Controller (Elgato)",    "notes": "Discord per-app volume down. Mid-match reach for noisy squadmates." },
+    { "label": "Disc VOL +",   "icon": "discUp",    "glyph": "+",  "cat": "teal",   "type": "volume",   "plugin": "Volume Controller (Elgato)",    "notes": "Discord per-app volume up." },
+    { "label": "Streaming",    "glyph": "▶",  "cat": "purple", "type": "folder", "target": "streaming", "plugin": "System: Switch Profile (built-in)", "notes": "Switch to Streaming profile (OBS scenes, Go Live, multi-step). Configure as 'Switch back when released' for hold-to-peek mid-match." },
+    { "label": "",             "glyph": "",   "cat": "empty",  "type": "empty",  "notes": "" },
+    { "label": "",             "glyph": "",   "cat": "empty",  "type": "empty",  "notes": "" },
+
+    { "label": "VOL −",        "icon": "volDown",   "glyph": "−",  "cat": "teal",   "type": "volume",   "plugin": "Volume Controller (Elgato)",    "notes": "System master volume down." },
+    { "label": "VOL +",        "icon": "volUp",     "glyph": "+",  "cat": "teal",   "type": "volume",   "plugin": "Volume Controller (Elgato)",    "notes": "System master volume up." },
+    { "label": "",             "glyph": "",   "cat": "empty",  "type": "empty",  "notes": "" },
+    { "label": "",             "glyph": "",   "cat": "empty",  "type": "empty",  "notes": "" },
+    { "label": "Home",         "icon": "home",      "glyph": "↩",  "cat": "amber",  "type": "folder", "target": "home", "plugin": "System: Switch Profile (built-in)", "notes": "Back to Home profile." }
+  ]
+}
+</script>
+
+<!-- ===================== STREAM DECK :: iRACING ===================== -->
+<script id="data-streamdeck-iracing" type="application/json">
+{
+  "rows": 3, "cols": 5,
+  "cells": [
+    { "label": "iRacing 📊",    "glyph": "▶",  "cat": "blue",   "type": "system",   "plugin": "System: Open (built-in)",       "notes": "Monitored launch — runs C:\\Tools\\Monitoring\\monitor-iracing.ps1 which: snapshots iRacing graphics .ini files + OpenXR Toolkit config, starts HWiNFO64 + PresentMon + a process poller, launches iRacing, waits for exit, generates an HTML session report and opens it. Replaces the plain Advanced Launcher cell." },
+    { "label": "Crew Chief",    "glyph": "♫",  "cat": "blue",   "type": "launcher", "app": "Crew Chief",     "plugin": "Advanced Launcher (BarRaider)", "notes": "Launch Crew Chief — race engineer voice." },
+    { "label": "SimHub",        "glyph": "≡",  "cat": "blue",   "type": "launcher", "app": "SimHub",         "plugin": "Advanced Launcher (BarRaider)", "notes": "Launch SimHub — overlays + dash." },
+    { "label": "Trading Paints","glyph": "✦",  "cat": "blue",   "type": "launcher", "app": "Trading Paints", "plugin": "Advanced Launcher (BarRaider)", "notes": "Launch Trading Paints — custom liveries. Must be running before iRacing UI." },
+    { "label": "Fast Repair",   "glyph": "FR", "cat": "amber",  "type": "macro","macro": "#fr$", "plugin": "SuperMacro", "notes": "Use a fast repair next time you stop. Limited per session." },
+
+    { "label": "Clear All",     "glyph": "✖",  "cat": "amber",  "type": "macro","macro": "#clear$",                  "plugin": "SuperMacro", "notes": "Clear all pit selections." },
+    { "label": "Fill + 4T",     "glyph": "⊕",  "cat": "amber",  "type": "macro","macro": "#lf rf lr rr ws fuel 999l$","plugin": "SuperMacro", "notes": "All four tyres + windscreen + fill to max." },
+    { "label": "Fill Only",     "glyph": "F",  "cat": "amber",  "type": "macro","macro": "#cleartires fuel 999l$",    "plugin": "SuperMacro", "notes": "Fuel only, no tyres." },
+    { "label": "4 Tyres",       "glyph": "4T", "cat": "amber",  "type": "macro","macro": "#lf rf lr rr$",             "plugin": "SuperMacro", "notes": "All four tyres, no fuel change." },
+    { "label": "OBS Clip",      "icon": "scissors", "glyph": "✂", "cat": "purple", "type": "obs", "plugin": "OBS Studio (Elgato)", "notes": "Save replay buffer (last 60–90s) to disk. Useful for capturing incidents or great laps without leaving the session. Requires OBS Replay Buffer enabled." },
+
+    { "label": "Fuel +1L",      "glyph": "+1", "cat": "amber",  "type": "macro","macro": "#fuel +1l$",                "plugin": "SuperMacro", "notes": "Adjust pit fuel target +1 L." },
+    { "label": "Fuel −1L",      "glyph": "−1", "cat": "amber",  "type": "macro","macro": "#fuel -1l$",                "plugin": "SuperMacro", "notes": "Adjust pit fuel target −1 L." },
+    { "label": "Fuel +5L",      "glyph": "+5", "cat": "amber",  "type": "macro","macro": "#fuel +5l$",                "plugin": "SuperMacro", "notes": "Adjust pit fuel target +5 L." },
+    { "label": "Fuel −5L",      "glyph": "−5", "cat": "amber",  "type": "macro","macro": "#fuel -5l$",                "plugin": "SuperMacro", "notes": "Adjust pit fuel target −5 L." },
+    { "label": "Home",          "icon": "home", "glyph": "↩",  "cat": "amber",  "type": "folder", "target": "home", "plugin": "System: Switch Profile (built-in)", "notes": "Back to Home profile." }
+  ]
+}
+</script>
+
+<!-- ==================== STREAM DECK :: STREAMING ==================== -->
+<script id="data-streamdeck-streaming" type="application/json">
+{
+  "rows": 3, "cols": 5,
+  "cells": [
+    { "label": "Go Live",       "glyph": "●",  "cat": "green",  "type": "obs",    "plugin": "OBS Studio (Elgato)", "notes": "Start streaming. Separate from End Stream — never a toggle." },
+    { "label": "End Stream",    "glyph": "■",  "cat": "red",    "type": "obs",    "plugin": "OBS Studio (Elgato)", "notes": "Stop streaming." },
+    { "label": "Rec Start",     "glyph": "⏺",  "cat": "purple", "type": "obs",    "plugin": "OBS Studio (Elgato)", "notes": "Start local recording." },
+    { "label": "Rec Stop",      "glyph": "⏹",  "cat": "red",    "type": "obs",    "plugin": "OBS Studio (Elgato)", "notes": "Stop local recording." },
+    { "label": "Save Clip",     "glyph": "✂",  "cat": "purple", "type": "obs",    "plugin": "OBS Studio (Elgato)", "notes": "Save replay buffer (must be enabled in OBS Settings → Output → Replay Buffer)." },
+
+    { "label": "Scene Race",    "glyph": "1",  "cat": "blue",   "type": "obs",    "plugin": "OBS Studio (Elgato)", "notes": "OBS scene: gameplay full, game audio, mic." },
+    { "label": "Scene Lobby",   "glyph": "2",  "cat": "blue",   "type": "obs",    "plugin": "OBS Studio (Elgato)", "notes": "OBS scene: lobby/menu, lower audio, mic." },
+    { "label": "Scene BRB",     "glyph": "3",  "cat": "amber",  "type": "obs",    "plugin": "OBS Studio (Elgato)", "notes": "OBS scene: static overlay, music, mic off." },
+    { "label": "Scene End",     "glyph": "4",  "cat": "blue",   "type": "obs",    "plugin": "OBS Studio (Elgato)", "notes": "OBS scene: results, webcam, mic." },
+    { "label": "Scene Cam",     "glyph": "5",  "cat": "blue",   "type": "obs",    "plugin": "OBS Studio (Elgato)", "notes": "OBS scene: webcam only, no game capture." },
+
+    { "label": "VOL −",         "icon": "volDown", "glyph": "−",  "cat": "teal",   "type": "volume",  "plugin": "Volume Controller (Elgato)", "notes": "System volume down." },
+    { "label": "VOL +",         "icon": "volUp",   "glyph": "+",  "cat": "teal",   "type": "volume",  "plugin": "Volume Controller (Elgato)", "notes": "System volume up." },
+    { "label": "Mic Mute",      "icon": "micMute", "glyph": "⊘",  "cat": "red",    "type": "discord", "plugin": "Discord (Elgato)",            "notes": "Discord mute — reflects Discord's actual mute state." },
+    { "label": "OBS",           "icon": "live",    "glyph": "▶",  "cat": "purple", "type": "launcher", "app": "OBS Studio", "plugin": "Advanced Launcher (BarRaider)", "notes": "Launch OBS Studio. Runs in background — once up, the Clip / Live / Save Clip cells on any profile target this same instance." },
+    { "label": "Home",          "icon": "home", "glyph": "↩",  "cat": "amber",  "type": "folder", "target": "home", "plugin": "System: Switch Profile (built-in)", "notes": "Back to Home profile." }
+  ]
+}
+</script>
+
+<!-- =========================== PRE-FLIGHT =========================== -->
+<!-- Apps that need to be running before a session. Per-game lists; shared
+     names refer to the same OS process so toggling state in one place is the
+     same as toggling it everywhere (the page treats names as the join key). -->
+<script id="data-preflight" type="application/json">
+{
+  "pubg": [
+    { "name": "Discord",        "notes": "Voice + DMs. Required for squad comms." },
+    { "name": "iCUE",           "notes": "Corsair mouse profile — DPI 800, sniper button." },
+    { "name": "SteelSeries GG", "notes": "Headset EQ + Sonar mic. Required for PUBG EQ hotkey." }
+  ],
+  "iracing": [
+    { "name": "iRacing",          "notes": "iRacing UI. Launcher and matchmaking." },
+    { "name": "Crew Chief",       "notes": "Spotter / race engineer voice." },
+    { "name": "SimHub",           "notes": "Telemetry + dash overlays." },
+    { "name": "Trading Paints",   "notes": "Custom liveries — must be running before iRacing UI launches." },
+    { "name": "FanaLab",          "notes": "Fanatec wheelbase + wheel firmware / FFB profile per car class. Required for proper FFB and tuning menu." },
+    { "name": "Joystick Gremlin", "notes": "Routes wheel → vJoy with the 12 MPS-L context modes. Required or ENC-L only does Fuel Mix (whatever Gremlin's last mode was)." },
+    { "name": "vJoy",             "notes": "Driver service — auto-loads at boot. Verify in joy.cpl that vJoy device #1 is present." },
+    { "name": "HidHide",          "notes": "Hides raw Fanatec from iRacing so only vJoy is seen. Service auto-runs; verify Fanatec is in the hidden list." },
+    { "name": "SoundVolumeView",  "notes": "Per-app audio script (Discord / Spotify / Game master via MPS-L pos 10–12). Lives in a folder Gremlin can shell out to." },
+    { "name": "Virtual Desktop",  "notes": "Wireless VR streamer (vrdesktop.net). Streamer must be running on PC for the headset to connect." },
+    { "name": "iRFFB 2022",       "notes": "Force feedback post-processor — adds curb / road texture / surface slip on top of iRacing's stock FFB. Must be running before iRacing's FFB target = vJoy Device 2 takes effect." },
+    { "name": "HWiNFO64",         "notes": "Sensor logging — captured automatically by the monitored launch script. No need to start manually." },
+    { "name": "Spotify",          "notes": "Required if you actually want MPS-L pos 11 to do anything. Open it before driving." },
+    { "name": "OBS Studio",       "notes": "Recording + clip buffer. Optional unless streaming or replay-clipping." },
+    { "name": "Discord",          "notes": "Voice for endurance team comms. Also the target for MPS-L pos 10 volume control." }
+  ]
+}
+</script>
+
+<!-- ====================== STREAM DECK :: AUDIO ====================== -->
+<script id="data-streamdeck-audio" type="application/json">
+{
+  "rows": 3, "cols": 5,
+  "cells": [
+    { "label": "PUBG EQ",      "icon": "eq",       "glyph": "EQ", "cat": "teal",   "type": "hotkey",   "plugin": "System: Hotkey (built-in)",         "notes": "SteelSeries GG hotkey → PUBG EQ profile (footstep clarity)." },
+    { "label": "Racing EQ",    "icon": "eq",       "glyph": "EQ", "cat": "teal",   "type": "hotkey",   "plugin": "System: Hotkey (built-in)",         "notes": "SteelSeries GG hotkey → Racing EQ profile (Crew Chief clarity)." },
+    { "label": "Output",       "icon": "swap",     "glyph": "⇄",  "cat": "blue",   "type": "audio-switch", "plugin": "Audio Switcher (Fred Emmott)",   "notes": "Toggle default playback device — headset ↔ speakers. Useful when squad leaves and you want to drop into room audio." },
+    { "label": "Now Playing",  "icon": "play",     "glyph": "⏯",  "cat": "green",  "type": "spotify",  "plugin": "Spotify (BarRaider)",               "notes": "Play / pause toggle. Cell shows currently playing track + artist when the BarRaider Spotify plugin is configured (Spotify Premium required)." },
+    { "label": "Mic Mute",     "icon": "micMute",  "glyph": "⊘",  "cat": "red",    "type": "discord",  "plugin": "Discord (Elgato)",                  "notes": "Discord mute. Cell visibly turns red when actually muted via the Discord plugin (better than a generic system hotkey because it reflects Discord's real state)." },
+
+    { "label": "VOL −",        "icon": "volDown",  "glyph": "−",  "cat": "teal",   "type": "volume",   "plugin": "Volume Controller (Elgato)",        "notes": "System master volume down. Volume Controller plugin replaces the legacy System volume hotkey and supports per-app and dial control." },
+    { "label": "VOL +",        "icon": "volUp",    "glyph": "+",  "cat": "teal",   "type": "volume",   "plugin": "Volume Controller (Elgato)",        "notes": "System master volume up." },
+    { "label": "Prev",         "icon": "prev",     "glyph": "⏮",  "cat": "green",  "type": "spotify",  "plugin": "Spotify (BarRaider)",               "notes": "Previous track." },
+    { "label": "Next",         "icon": "next",     "glyph": "⏭",  "cat": "green",  "type": "spotify",  "plugin": "Spotify (BarRaider)",               "notes": "Next track." },
+    { "label": "Save",         "icon": "heart",    "glyph": "♡",  "cat": "purple", "type": "spotify",  "plugin": "Spotify (BarRaider)",               "notes": "Save current track to your Spotify library." },
+
+    { "label": "Disc VOL −",   "icon": "discDown", "glyph": "−",  "cat": "teal",   "type": "volume",   "plugin": "Volume Controller (Elgato)",        "notes": "Discord per-app volume down via Volume Controller (replaces Win Tools App Audio Mixer pattern)." },
+    { "label": "Disc VOL +",   "icon": "discUp",   "glyph": "+",  "cat": "teal",   "type": "volume",   "plugin": "Volume Controller (Elgato)",        "notes": "Discord per-app volume up." },
+    { "label": "",             "glyph": "",        "cat": "empty",  "type": "empty",  "notes": "" },
+    { "label": "",             "glyph": "",        "cat": "empty",  "type": "empty",  "notes": "" },
+    { "label": "Home",         "icon": "home",     "glyph": "↩",  "cat": "amber",  "type": "folder", "target": "home", "plugin": "System: Switch Profile (built-in)", "notes": "Back to Home profile." }
+  ]
+}
+</script>
+
+<!-- ====================== STREAM DECK :: DISPLAY ====================== -->
+<script id="data-streamdeck-display" type="application/json">
+{
+  "rows": 3, "cols": 5,
+  "cells": [
+    { "label": "Top-L ⏻",   "glyph": "▢", "cat": "blue",   "type": "system", "plugin": "System: Open (built-in)", "notes": "Toggle Top-Left monitor on/off. Runs C:\\Tools\\MultiMonitorTool\\toggle-top-left.bat (which calls MultiMonitorTool.exe /switch on the relevant \\\\.\\DISPLAY id)." },
+    { "label": "Top-R ⏻",   "glyph": "▢", "cat": "blue",   "type": "system", "plugin": "System: Open (built-in)", "notes": "Toggle Top-Right monitor on/off. Runs toggle-top-right.bat." },
+    { "label": "Ultra ⏻",   "glyph": "▭", "cat": "blue",   "type": "system", "plugin": "System: Open (built-in)", "notes": "Toggle Ultrawide main monitor on/off. Runs toggle-ultra.bat." },
+    { "label": "",          "glyph": "",  "cat": "empty",  "type": "empty",  "notes": "" },
+    { "label": "Home",      "icon": "home", "glyph": "↩",  "cat": "amber",  "type": "folder", "target": "home", "plugin": "System: Switch Profile (built-in)", "notes": "Back to Home profile." },
+
+    { "label": "All ON",    "glyph": "▦", "cat": "green",  "type": "system", "plugin": "System: Open (built-in)", "notes": "Preset: enable all 3 monitors. Runs all-on.bat (3 /enable calls)." },
+    { "label": "VR Race",   "glyph": "🥽", "cat": "purple", "type": "system", "plugin": "System: Open (built-in)", "notes": "Preset for VR racing: ultrawide ON (for Crew Chief / iRacing UI fallback), both top screens OFF. Runs vr-race.bat." },
+    { "label": "Work",      "glyph": "💼", "cat": "amber",  "type": "system", "plugin": "System: Open (built-in)", "notes": "Preset for work: all 3 ON. Same as All ON in current rig but kept separate so you can later add app-launch / EQ swaps without touching the simple ON preset." },
+    { "label": "All OFF",   "glyph": "⏻", "cat": "red",    "type": "system", "plugin": "System: Open (built-in)", "notes": "Disable all 3 monitors (e.g. AFK). Wakes on mouse / keyboard. Runs all-off.bat." },
+    { "label": "",          "glyph": "",  "cat": "empty",  "type": "empty",  "notes": "" },
+
+    { "label": "",          "glyph": "",  "cat": "empty",  "type": "empty",  "notes": "" },
+    { "label": "",          "glyph": "",  "cat": "empty",  "type": "empty",  "notes": "" },
+    { "label": "",          "glyph": "",  "cat": "empty",  "type": "empty",  "notes": "" },
+    { "label": "",          "glyph": "",  "cat": "empty",  "type": "empty",  "notes": "" },
+    { "label": "Sleep PC",  "glyph": "☾", "cat": "amber",  "type": "system", "plugin": "System: Power (built-in)", "notes": "Sleep the whole PC." }
+  ]
+}
+</script>
+
+<!-- ======================== PUBG :: KEYBOARD ======================== -->
+<script id="data-pubg-keyboard" type="application/json">
+{
+  "rows": [
+    [
+      { "k": "Esc", "w": 1, "cat": "ui" },
+      { "k": "F1", "w": 1, "cat": "ui" }, { "k": "F2", "w": 1, "cat": "ui" },
+      { "k": "F3", "w": 1, "cat": "ui" }, { "k": "F4", "w": 1, "cat": "ui" },
+      { "k": "F5", "w": 1, "cat": "ui" }, { "k": "F6", "w": 1, "cat": "ui" },
+      { "k": "F7", "w": 1, "cat": "ui" }, { "k": "F8", "w": 1, "cat": "ui" },
+      { "k": "F9", "w": 1, "cat": "ui" }, { "k": "F10", "w": 1, "cat": "ui" },
+      { "k": "F11", "w": 1, "cat": "ui" }, { "k": "F12", "w": 1, "cat": "ui" }
+    ],
+    [
+      { "k": "`", "w": 1, "cat": "ui" },
+      { "k": "1", "w": 1, "cat": "combat", "label": "Wpn 1" },
+      { "k": "2", "w": 1, "cat": "combat", "label": "Wpn 2" },
+      { "k": "3", "w": 1, "cat": "combat", "label": "Wpn 3" },
+      { "k": "4", "w": 1, "cat": "combat", "label": "Throw" },
+      { "k": "5", "w": 1, "cat": "ui" },
+      { "k": "6", "w": 1, "cat": "ui" },
+      { "k": "7", "w": 1, "cat": "heal",   "label": "Med Kit" },
+      { "k": "8", "w": 1, "cat": "moved",  "label": "First Aid", "moved": "M12" },
+      { "k": "9", "w": 1, "cat": "moved",  "label": "Bandage",   "moved": "M10" },
+      { "k": "0", "w": 1, "cat": "moved",  "label": "Booster",   "moved": "M11" },
+      { "k": "-", "w": 1, "cat": "ui" },
+      { "k": "=", "w": 1, "cat": "ui" },
+      { "k": "Backspace", "w": 2, "cat": "ui" }
+    ],
+    [
+      { "k": "Tab", "w": 1.5, "cat": "ui" },
+      { "k": "Q", "w": 1, "cat": "move", "label": "Lean L" },
+      { "k": "W", "w": 1, "cat": "move", "label": "Fwd" },
+      { "k": "E", "w": 1, "cat": "move", "label": "Lean R" },
+      { "k": "R", "w": 1, "cat": "combat", "label": "Reload" },
+      { "k": "T", "w": 1, "cat": "comms", "label": "Voice" },
+      { "k": "Y", "w": 1, "cat": "ui" },
+      { "k": "U", "w": 1, "cat": "ui" },
+      { "k": "I", "w": 1, "cat": "ui" },
+      { "k": "O", "w": 1, "cat": "ui" },
+      { "k": "P", "w": 1, "cat": "ui" },
+      { "k": "[", "w": 1, "cat": "ui" },
+      { "k": "]", "w": 1, "cat": "ui" },
+      { "k": "\\", "w": 1.5, "cat": "ui" }
+    ],
+    [
+      { "k": "Caps", "w": 1.75, "cat": "ui" },
+      { "k": "A", "w": 1, "cat": "move", "label": "Left" },
+      { "k": "S", "w": 1, "cat": "move", "label": "Back" },
+      { "k": "D", "w": 1, "cat": "move", "label": "Right" },
+      { "k": "F", "w": 1, "cat": "vehicle", "label": "Use" },
+      { "k": "G", "w": 1, "cat": "combat", "label": "Grenade" },
+      { "k": "H", "w": 1, "cat": "ui" },
+      { "k": "J", "w": 1, "cat": "ui" },
+      { "k": "K", "w": 1, "cat": "ui" },
+      { "k": "L", "w": 1, "cat": "ui" },
+      { "k": ";", "w": 1, "cat": "ui" },
+      { "k": "'", "w": 1, "cat": "ui" },
+      { "k": "Enter", "w": 2.25, "cat": "ui" }
+    ],
+    [
+      { "k": "Shift", "w": 2.25, "cat": "move", "label": "Sprint" },
+      { "k": "Z", "w": 1, "cat": "move", "label": "Prone" },
+      { "k": "X", "w": 1, "cat": "combat", "label": "Unarm" },
+      { "k": "C", "w": 1, "cat": "moved", "label": "Crouch", "moved": "M7" },
+      { "k": "V", "w": 1, "cat": "ui" },
+      { "k": "B", "w": 1, "cat": "combat", "label": "Fire Mode" },
+      { "k": "N", "w": 1, "cat": "comms", "label": "Map −" },
+      { "k": "M", "w": 1, "cat": "comms",  "label": "Map" },
+      { "k": ",", "w": 1, "cat": "ui" },
+      { "k": ".", "w": 1, "cat": "ui" },
+      { "k": "/", "w": 1, "cat": "ui" },
+      { "k": "Shift", "w": 2.75, "cat": "ui" }
+    ],
+    [
+      { "k": "Ctrl", "w": 1.5, "cat": "ui" },
+      { "k": "Win",  "w": 1.25, "cat": "ui" },
+      { "k": "Alt",  "w": 1.25, "cat": "move", "label": "Walk" },
+      { "k": "Space","w": 6.25, "cat": "move", "label": "Jump / Vault" },
+      { "k": "Alt",  "w": 1.25, "cat": "ui" },
+      { "k": "Win",  "w": 1.25, "cat": "ui" },
+      { "k": "Menu", "w": 1.25, "cat": "ui" },
+      { "k": "Ctrl", "w": 1.5, "cat": "moved", "label": "Seats", "moved": "M2/M3" }
+    ]
+  ],
+  "navCluster": [
+    [
+      { "k": "Ins", "cat": "ui" },
+      { "k": "Home", "cat": "ui" },
+      { "k": "PgUp", "cat": "moved", "label": "Zero +", "moved": "M6" }
+    ],
+    [
+      { "k": "Del", "cat": "ui" },
+      { "k": "End", "cat": "ui" },
+      { "k": "PgDn", "cat": "moved", "label": "Zero −", "moved": "M9" }
+    ]
+  ]
+}
+</script>
+
+<!-- ======================== PUBG :: SCIMITAR ======================== -->
+<script id="data-pubg-scimitar" type="application/json">
+{
+  "rows": 4, "cols": 3,
+  "buttons": [
+    { "id": "M1",  "label": "Flashbang",       "key": "Flash",    "cat": "throw",   "row": "hard" },
+    { "id": "M2",  "label": "Seat: Gunner",    "key": "Ctrl+2",   "cat": "vehicle", "row": "hard" },
+    { "id": "M3",  "label": "Seat: Driver",    "key": "Ctrl+1",   "cat": "vehicle", "row": "hard" },
+
+    { "id": "M4",  "label": "Grenade",         "key": "Grenade",  "cat": "throw",   "row": "mid" },
+    { "id": "M5",  "label": "Smoke",           "key": "Smoke",    "cat": "throw",   "row": "mid" },
+    { "id": "M6",  "label": "Scope Zero +",    "key": "PgUp",     "cat": "zero",    "row": "mid" },
+
+    { "id": "M7",  "label": "Crouch",          "key": "C",        "cat": "move",    "row": "easy" },
+    { "id": "M8",  "label": "Ping",            "key": "Ping",     "cat": "ping",    "row": "easy" },
+    { "id": "M9",  "label": "Scope Zero −",    "key": "PgDn",     "cat": "zero",    "row": "easy" },
+
+    { "id": "M10", "label": "Bandage",         "key": "9",        "cat": "heal",    "row": "bot" },
+    { "id": "M11", "label": "Booster",         "key": "0",        "cat": "heal",    "row": "bot" },
+    { "id": "M12", "label": "First Aid Kit",   "key": "8",        "cat": "heal",    "row": "bot" }
+  ]
+}
+</script>
+
+<!-- ======================= iRACING :: WHEEL ========================= -->
+<script id="data-iracing-wheel" type="application/json">
+{
+  "encoders": [
+    { "id": "ENC-L", "label": "Left thumb encoder", "context": "MPS-L",
+      "modes": [
+        { "pos": 1,  "label": "Fuel Mix",       "ccw": "Fuel Mix −",       "cw": "Fuel Mix +" },
+        { "pos": 2,  "label": "TC2 / Slip",     "ccw": "TC2 −",            "cw": "TC2 +" },
+        { "pos": 3,  "label": "Diff Entry",     "ccw": "Diff Entry −",     "cw": "Diff Entry +" },
+        { "pos": 4,  "label": "Diff Mid",       "ccw": "Diff Mid −",       "cw": "Diff Mid +" },
+        { "pos": 5,  "label": "Diff Exit",      "ccw": "Diff Exit −",      "cw": "Diff Exit +" },
+        { "pos": 6,  "label": "FFB Strength",   "ccw": "FFB −",            "cw": "FFB +" },
+        { "pos": 7,  "label": "In-car Volume",  "ccw": "In-car Vol −",     "cw": "In-car Vol +" },
+        { "pos": 8,  "label": "Spotter Volume", "ccw": "Spotter Vol −",    "cw": "Spotter Vol +" },
+        { "pos": 9,  "label": "Brake Migration","ccw": "Brake Migration −","cw": "Brake Migration +" },
+        { "pos": 10, "label": "Discord Volume", "ccw": "Discord Vol −",    "cw": "Discord Vol +", "via": "OS (Gremlin → script)" },
+        { "pos": 11, "label": "Spotify Volume", "ccw": "Spotify Vol −",    "cw": "Spotify Vol +", "via": "OS (Gremlin → script)" },
+        { "pos": 12, "label": "Game Master Vol","ccw": "iRacing Vol −",    "cw": "iRacing Vol +", "via": "OS (Gremlin → script)" }
+      ]
+    },
+    { "id": "ENC-R", "label": "Right thumb encoder", "cw": "Brake Bias +", "ccw": "Brake Bias −" }
+  ],
+  "funky": {
+    "id": "FUNKY", "label": "FunkySwitch (7-way)",
+    "up": "Spare", "down": "Spare",
+    "left": "Spare", "right": "Spare",
+    "push": "", "rotary": "iRating / SoF cycle"
+  },
+  "mps": {
+    "left":  { "id": "MPS-L", "label": "Left MPS (12-pos)",  "selects": "ENC-L", "all": "Context selector for ENC-L" },
+    "right": { "id": "MPS-R", "label": "Right MPS (12-pos)", "all": "TC Level" }
+  },
+  "toggles": [
+    { "id": "TOG-L", "label": "Toggle L", "action": "Discord push-to-talk" },
+    { "id": "TOG-R", "label": "Toggle R", "action": "Crew Chief talk (push-to-listen)" }
+  ],
+  "updown": [
+    { "id": "UPDN-L", "label": "ERS Deploy Mode",  "up": "ERS mode next",   "down": "ERS mode prev" },
+    { "id": "UPDN-R", "label": "Black box cycle",  "up": "Black box next",  "down": "Black box prev" }
+  ],
+  "joysticks": [
+    { "id": "B7", "label": "Left joystick — Mouse pointer", "left": "Mouse cursor ← (held)", "right": "Mouse cursor → (held)", "up": "Mouse cursor ↑ (held)", "down": "Mouse cursor ↓ (held)", "push": "Mouse left click", "via": "Gremlin → Mouse output" },
+    { "id": "B8", "label": "Right joystick — Black box nav", "left": "Black box tab left", "right": "Black box tab right", "up": "Black box row up", "down": "Black box row down", "push": "Black box click / select" }
+  ],
+  "buttons": [
+    { "id": "B1",  "label": "B1",  "all": "Push-to-talk (in-game)" },
+    { "id": "B2",  "label": "B2",  "all": "Voice channel volume +" },
+    { "id": "B3",  "label": "B3",  "all": "Voice channel volume −" },
+    { "id": "B4",  "label": "B4",  "all": "Wiper / Tear-off" },
+    { "id": "B5",  "label": "B5",  "all": "Headlights flash" },
+    { "id": "B6",  "label": "B6",  "all": "Speed limiter" },
+    { "id": "B9",  "label": "B9",  "all": "OLED dash page cycle (lap / fuel / tyres / delta)" },
+    { "id": "B10", "label": "B10", "all": "Center view (VR reset)" },
+    { "id": "B11", "label": "B11", "all": "Spare — assign per car in FanaLab" }
+  ]
+}
+</script>
+
+<!-- ============================ META =============================== -->
+<script id="data-meta" type="application/json">
+{
+  "categories": {
+    "blue":    { "name": "iRacing / launch / movement" },
+    "red":     { "name": "OBS stop / throw / mute / combat" },
+    "green":   { "name": "PUBG / go / heal" },
+    "amber":   { "name": "Pit / caution / scope zero" },
+    "purple":  { "name": "ERS / ping / record / comms" },
+    "teal":    { "name": "Audio / vehicle" },
+    "empty":   { "name": "Empty key" },
+    "move":    { "name": "Movement" },
+    "combat":  { "name": "Combat" },
+    "heal":    { "name": "Healing" },
+    "comms":   { "name": "Communication" },
+    "vehicle": { "name": "Vehicle" },
+    "throw":   { "name": "Throwable" },
+    "ping":    { "name": "Ping" },
+    "zero":    { "name": "Scope zero" },
+    "moved":   { "name": "Moved to Scimitar" },
+    "ui":      { "name": "Unbound / system" }
+  },
+  "checklist": [
+    {
+      "title": "Stream Deck plugins & iRacing",
+      "items": [
+        "Install iRaceIT (Stream Deck Store, free)",
+        "Install SuperMacro (Stream Deck Store, free)",
+        "Verify OBS plugin active (bundled)",
+        "Install Win Tools (Stream Deck Store, free)",
+        "Win Tools → App Audio Mixer → target Discord.exe",
+        "Set SteelSeries GG hotkeys for PUBG EQ and Racing EQ",
+        "Mirror GG hotkeys into Stream Deck → System → Hotkey",
+        "Create FanaLab profiles: GT3, LMP, Formula",
+        "iRacing → Options → Drive → Autochat Messages — assign macros to Ctrl+F1..F8",
+        "Test each pit macro in a practice session before racing",
+        "Verify iRaceIT connects (must be in-sim, not just launched)",
+        "Verify Crew Chief voice clarity on Racing EQ",
+        "Verify SimHub overlay renders on the correct monitor",
+        "Verify Trading Paints applies livery"
+      ]
+    },
+    {
+      "title": "Scimitar & OBS",
+      "items": [
+        "iCUE → create hardware profile named 'PUBG'",
+        "Map M1–M12 per the Scimitar layout in this doc",
+        "Save to on-board memory (works without iCUE running)",
+        "Bind same keys in PUBG → Settings → Keybinds",
+        "Test seat switch: hold W + press M2 → car should maintain speed",
+        "Verify scope zeroing M6/M9 in a practice match",
+        "Verify PUBG EQ footstep directionality in a building",
+        "Create 5 OBS scenes: Race, Lobby, BRB, End, Cam",
+        "Enable OBS replay buffer (Settings → Output → Replay Buffer, 60–90 s)",
+        "Verify Save Clip writes to replay buffer output folder",
+        "Set Go Live and End Stream as separate actions (not toggle)"
+      ]
+    },
+    {
+      "title": "Software & paths",
+      "items": [
+        "iRaceIT — Stream Deck Store",
+        "SuperMacro — Stream Deck Store",
+        "Win Tools — Stream Deck Store",
+        "iCUE — profile 'PUBG', on-board memory enabled",
+        "FanaLab — profiles GT3, LMP, Formula",
+        "SteelSeries GG — profiles 'PUBG EQ', 'Racing EQ'",
+        "Crew Chief — crewchief.thecrewchief.org",
+        "SimHub — simhubdash.com",
+        "Trading Paints — tradingpaints.com",
+        "iRacing macros — Documents\\iRacing\\app.ini → [Autochat Messages]",
+        "Repo — streamdeck-config/"
+      ]
+    }
+  ]
+}
+</script>
+
+<script src="app.js?v=20"></script>
+</body>
+</html>
