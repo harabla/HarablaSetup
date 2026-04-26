@@ -929,6 +929,78 @@ a.ref-card:hover { background: var(--bg-elev-2); border-color: var(--text-faint)
 }
 .planned-tag--done { color: var(--cat-green); background: rgba(120, 200, 120, 0.12); }
 
+/* Verify — keyboard chatter / NKRO */
+.kbtest-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 12px;
+}
+@media (max-width: 800px) { .kbtest-grid { grid-template-columns: 1fr; } }
+.kbtest-card {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.kbtest-card h3 { margin: 0 0 6px; font-size: 14px; }
+#kbtest-pad:focus { border-color: var(--cat-teal); outline: none; }
+
+/* Verify — pre-game routine cards */
+.pregame-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+.pregame-card {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.pregame-head {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px;
+}
+.pregame-head h3 { margin: 0; font-size: 14px; flex: 0 0 auto; }
+.pregame-progress {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; color: var(--text-dim);
+  flex: 1;
+}
+.pregame-reset { font-size: 11px !important; padding: 3px 8px !important; }
+.pregame-bar {
+  height: 4px;
+  background: var(--bg-elev);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.pregame-bar-fill {
+  height: 100%;
+  background: var(--cat-green);
+  transition: width 0.15s ease-out;
+}
+.pregame-list {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.pregame-list li {
+  font-size: 13px;
+  padding: 4px 0;
+  line-height: 1.5;
+}
+.pregame-list li label {
+  display: flex; align-items: flex-start; gap: 8px;
+  cursor: pointer;
+}
+.pregame-list li input[type="checkbox"] {
+  margin-top: 3px;
+  accent-color: var(--cat-green);
+}
+.pregame-list li.done { color: var(--text-faint); text-decoration: line-through; }
+
 /* Tune — sensitivity converter + game library + add-a-game */
 .tune-converter {
   background: var(--bg);

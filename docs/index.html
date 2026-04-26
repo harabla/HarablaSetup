@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=18" />
+  <link rel="stylesheet" href="styles.css?v=19" />
   <script>
     // Stash the initial hash for app.js, then strip it so the browser does not
     // anchor-scroll the section heading under the sticky topbar on first load.
@@ -338,19 +338,41 @@
       </div>
     </div>
 
-    <div class="planned-card">
-      <h2>Keyboard chatter / NKRO <span class="planned-tag">planned</span></h2>
-      <p>Rapid press detection (chatter — multiple registers per press), simultaneous-key registration count (NKRO).</p>
+    <div class="planned-card planned-card--full">
+      <h2>Keyboard chatter / NKRO <span class="planned-tag planned-tag--done">live</span></h2>
+      <p>Click in the panel below and either mash a single key (chatter test) or hold many keys at once (NKRO test). All checks run in your browser.</p>
+
+      <div class="kbtest-grid">
+        <div class="kbtest-card">
+          <h3>Live key events</h3>
+          <p class="mtest-hint">Press keys in this section. Chatter = same key fires keydown again within 30ms of its keyup. Held keys auto-repeat are filtered out.</p>
+          <div class="mtest-pad" id="kbtest-pad" tabindex="0">Click here, then type</div>
+          <div class="mtest-readout">
+            <div><strong id="kbtest-presses">0</strong><span>presses</span></div>
+            <div><strong id="kbtest-chatter">0</strong><span>chatter events</span></div>
+            <div><strong id="kbtest-held-max">0</strong><span>peak NKRO</span></div>
+          </div>
+          <div class="mtest-verdict" id="kbtest-verdict">— start typing</div>
+          <button type="button" class="wheel-calib-btn" id="kbtest-reset">Reset</button>
+        </div>
+
+        <div class="kbtest-card">
+          <h3>Recent events</h3>
+          <ol class="scim-log" id="kbtest-log"></ol>
+        </div>
+      </div>
     </div>
 
     <div class="planned-card">
       <h2>Wheel calibration check <span class="planned-tag">planned</span></h2>
       <p>Live joy.cpl-style view — every Fanatec input visible; verify no drift on centre, full lock left + right, MPS positions all detected, encoder CW + CCW working.</p>
+      <p class="planned-meta">Needs PC: depends on real Windows joystick API reads (probe_windows.go).</p>
     </div>
 
-    <div class="planned-card">
-      <h2>Pre-game routine <span class="planned-tag">planned</span></h2>
-      <p>Per-game ordered checklist beyond the running-app pre-flight: FanaLab on right profile, FFB strength sane, headset comfortable, Discord connected, network ping ✓.</p>
+    <div class="planned-card planned-card--full">
+      <h2>Pre-game routine <span class="planned-tag planned-tag--done">live</span></h2>
+      <p>Ordered checklist per game — beyond the running-app pre-flight, these are things you do manually before queueing. Check progress is saved per-session in localStorage.</p>
+      <div class="pregame-grid" id="pregame-grid"></div>
     </div>
   </div>
 </section>
@@ -1459,6 +1481,37 @@ Write-Host "[report] generated: $LogDir\report.html" -ForegroundColor Cyan</pre>
 }
 </script>
 
+<!-- ====================== PRE-GAME ROUTINES ====================== -->
+<!-- Ordered checklists distinct from running-app pre-flight. These are
+     things the user does manually, not "is this exe running" probes. -->
+<script id="data-pregame" type="application/json">
+{
+  "iracing": [
+    { "step": "Visit restroom · hydrate · set room temperature comfortable" },
+    { "step": "Wheel pulled in to a known position · pedals at the right pressure" },
+    { "step": "FanaLab on the matching profile (GT3 / LMP / Formula)" },
+    { "step": "iRFFB 2022 running and showing live signal" },
+    { "step": "Crew Chief running · spotter test heard" },
+    { "step": "Discord connected to right channel · PTT tested (TL hold)" },
+    { "step": "Network ping to iRacing servers stable (<60ms, no spikes)" },
+    { "step": "VR session: SteamVR room boundary set · Quest battery ≥ 50%" },
+    { "step": "Center view binding (B10) tested in pit menu before going on track" },
+    { "step": "MPS-L position confirmed for the adjustment you'll need first (BB? Fuel mix?)" }
+  ],
+  "pubg": [
+    { "step": "Mouse pad surface clean · sensor on textured area" },
+    { "step": "DPI confirmed at 800 (mouse onboard memory or iCUE)" },
+    { "step": "Polling rate verified (Verify → Mouse hardware → Polling rate)" },
+    { "step": "Windows Enhance Pointer Precision OFF" },
+    { "step": "PUBG EQ active in SteelSeries GG (footstep clarity)" },
+    { "step": "Discord squad voice connected · Mic level checked" },
+    { "step": "Network ping ✓ · packet loss test passed" },
+    { "step": "Scimitar mapping spot-check (Verify → Scimitar) for any iCUE drift" },
+    { "step": "Recording armed (OBS replay buffer enabled if you want clips)" }
+  ]
+}
+</script>
+
 <!-- ====================== STREAM DECK :: AUDIO ====================== -->
 <script id="data-streamdeck-audio" type="application/json">
 {
@@ -1771,6 +1824,6 @@ Write-Host "[report] generated: $LogDir\report.html" -ForegroundColor Cyan</pre>
 }
 </script>
 
-<script src="app.js?v=29"></script>
+<script src="app.js?v=30"></script>
 </body>
 </html>

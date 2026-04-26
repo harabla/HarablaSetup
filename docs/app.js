@@ -38,6 +38,7 @@ const data = {
   scimitar:  readJSON('data-pubg-scimitar'),
   wheel:     readJSON('data-iracing-wheel'),
   preflight: readJSON('data-preflight'),
+  pregame:   readJSON('data-pregame'),
   meta:      readJSON('data-meta'),
 };
 
@@ -1734,4 +1735,143 @@ const GAME_YAW = [
     out.textContent = `// Drop the block under "games" in your rig-config.json:\n\n${json}\n\n// Then duplicate scripts/monitor-iracing.ps1 to scripts/${(block.monitoring || {}).wrapper || '<game>.ps1'}\n// (if monitoring=true) and adjust the iRacing-specific bits.`;
     out.hidden = false;
   });
+})();
+
+// ---------- Verify: keyboard chatter / NKRO ----------
+(function () {
+  const pad = $('#kbtest-pad');
+  if (!pad) return;
+  const log = $('#kbtest-log');
+  const verdict = $('#kbtest-verdict');
+
+  let presses = 0, chatter = 0;
+  const heldKeys = new Set();
+  let peakNKRO = 0;
+  // Track most recent keyup time per physical key for chatter detection
+  const lastUpAt = {};
+  const recent = [];
+
+  function updateReadout() {
+    $('#kbtest-presses').textContent = presses;
+    $('#kbtest-chatter').textContent = chatter;
+    $('#kbtest-held-max').textContent = peakNKRO;
+    if (presses === 0) {
+      verdict.textContent = '— start typing';
+      verdict.className = 'mtest-verdict';
+    } else if (chatter > 0) {
+      verdict.textContent = `✗ ${chatter} chatter event${chatter !== 1 ? 's' : ''} — switch may be failing. Re-test on multiple keys.`;
+      verdict.className = 'mtest-verdict fail';
+    } else if (peakNKRO < 6) {
+      verdict.textContent = `⚠ Peak ${peakNKRO}KRO — try holding 6+ keys to see if your keyboard supports it.`;
+      verdict.className = 'mtest-verdict warn';
+    } else {
+      verdict.textContent = `✓ ${peakNKRO}KRO simultaneous · 0 chatter detected`;
+      verdict.className = 'mtest-verdict ok';
+    }
+  }
+
+  function pushEvent(label) {
+    recent.unshift({ label, t: new Date().toLocaleTimeString() + '.' + (Date.now() % 1000).toString().padStart(3, '0') });
+    if (recent.length > 15) recent.pop();
+    log.innerHTML = recent.map(r =>
+      `<li><code>${escapeHTML(r.label)}</code> <span class="scim-log-t">${r.t}</span></li>`).join('');
+  }
+
+  // Listen on the pad itself (it's tabindex=0 → focusable).
+  pad.addEventListener('keydown', e => {
+    if (e.repeat) return; // OS auto-repeat — skip
+    const code = e.code;
+    const now = performance.now();
+    presses++;
+    heldKeys.add(code);
+    if (heldKeys.size > peakNKRO) peakNKRO = heldKeys.size;
+
+    // Chatter: keydown within 30ms of last keyup for same key
+    if (lastUpAt[code] && (now - lastUpAt[code]) < 30) {
+      chatter++;
+      pushEvent(`⚠ chatter on ${code} (${(now - lastUpAt[code]).toFixed(0)}ms gap)`);
+    } else {
+      pushEvent(`↓ ${code}`);
+    }
+    updateReadout();
+    e.preventDefault(); // don't let browser hotkeys eat the event
+  });
+  pad.addEventListener('keyup', e => {
+    heldKeys.delete(e.code);
+    lastUpAt[e.code] = performance.now();
+    pushEvent(`↑ ${e.code} · NKRO now ${heldKeys.size}`);
+  });
+
+  $('#kbtest-reset').addEventListener('click', () => {
+    presses = 0; chatter = 0; peakNKRO = 0;
+    heldKeys.clear();
+    Object.keys(lastUpAt).forEach(k => delete lastUpAt[k]);
+    recent.length = 0;
+    log.innerHTML = '';
+    updateReadout();
+  });
+  updateReadout();
+})();
+
+// ---------- Verify: pre-game routine ----------
+(function () {
+  const wrap = $('#pregame-grid');
+  if (!wrap || !data.pregame) return;
+  const STORAGE_KEY = 'gaming-ref:pregame';
+
+  function loadState() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+    catch { return {}; }
+  }
+  function saveState(s) { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+  let state = loadState();
+
+  function render() {
+    wrap.innerHTML = Object.entries(data.pregame).map(([game, steps]) => {
+      const checked = state[game] || {};
+      const done = steps.filter((_, i) => checked[i]).length;
+      const total = steps.length;
+      const pct = Math.round((done / total) * 100);
+      return `
+        <div class="pregame-card" data-game="${escapeAttr(game)}">
+          <div class="pregame-head">
+            <h3>${escapeHTML(game.toUpperCase())}</h3>
+            <span class="pregame-progress">${done} / ${total} · ${pct}%</span>
+            <button type="button" class="wheel-calib-btn pregame-reset">Reset</button>
+          </div>
+          <div class="pregame-bar"><div class="pregame-bar-fill" style="width:${pct}%"></div></div>
+          <ol class="pregame-list">
+            ${steps.map((s, i) => `
+              <li class="${checked[i] ? 'done' : ''}">
+                <label>
+                  <input type="checkbox" data-game="${escapeAttr(game)}" data-i="${i}" ${checked[i] ? 'checked' : ''}>
+                  <span>${escapeHTML(s.step)}</span>
+                </label>
+              </li>
+            `).join('')}
+          </ol>
+        </div>
+      `;
+    }).join('');
+
+    wrap.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const g = cb.dataset.game;
+        const i = +cb.dataset.i;
+        if (!state[g]) state[g] = {};
+        state[g][i] = cb.checked;
+        saveState(state);
+        render();
+      });
+    });
+    wrap.querySelectorAll('.pregame-reset').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const g = e.target.closest('.pregame-card').dataset.game;
+        delete state[g];
+        saveState(state);
+        render();
+      });
+    });
+  }
+  render();
 })();
