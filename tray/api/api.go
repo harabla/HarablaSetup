@@ -16,16 +16,23 @@ import (
 	"github.com/hkbla/streamdeck-config/tray/exec"
 	"github.com/hkbla/streamdeck-config/tray/probe"
 	"github.com/hkbla/streamdeck-config/tray/verify"
+	"github.com/hkbla/streamdeck-config/tray/watch"
 )
 
-// Server holds the dependencies for handlers — config + action dispatcher.
+// Server holds the dependencies for handlers — config, action dispatcher,
+// and the game-launch watcher.
 type Server struct {
 	cfg        *config.Config
 	dispatcher *exec.Dispatcher
+	watcher    *watch.Watcher
 }
 
-func NewServer(cfg *config.Config) *Server {
-	return &Server{cfg: cfg, dispatcher: exec.NewDispatcher(cfg)}
+func NewServer(cfg *config.Config, watcher *watch.Watcher) *Server {
+	return &Server{
+		cfg:        cfg,
+		dispatcher: exec.NewDispatcher(cfg),
+		watcher:    watcher,
+	}
 }
 
 // Register attaches all /api/* routes onto mux.
@@ -39,6 +46,7 @@ func (s *Server) Register(mux *http.ServeMux) {
 	mux.HandleFunc("/api/action", s.handleAction)
 	mux.HandleFunc("/api/verify", s.handleVerify)  // /api/verify (all)
 	mux.HandleFunc("/api/verify/", s.handleVerify) // /api/verify/<game>[/baseline]
+	mux.HandleFunc("/api/games", s.handleGames)    // game-launch watcher state
 }
 
 type stateResp struct {
@@ -113,6 +121,17 @@ func (s *Server) handleAction(w http.ResponseWriter, r *http.Request) {
 	}
 	res := s.dispatcher.Run(req.Action, req.Params)
 	writeJSON(w, res)
+}
+
+// handleGames returns the watcher's per-game state map: {running, last_launch,
+// last_exit, last_verify} per game configured in rig-config.json. Refreshed
+// at the watcher's poll interval (~2.5s).
+func (s *Server) handleGames(w http.ResponseWriter, r *http.Request) {
+	if s.watcher == nil {
+		writeJSON(w, map[string]interface{}{})
+		return
+	}
+	writeJSON(w, s.watcher.States())
 }
 
 // handleVerify routes:

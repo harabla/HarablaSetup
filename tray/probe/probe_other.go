@@ -5,6 +5,62 @@
 // frontend can be built and styled without the real PC connected.
 package probe
 
+import (
+	"os"
+	"strings"
+	"sync"
+)
+
+// MockRunningGamesEnv lets dev override which game exes appear running.
+// Set MOCK_GAMES=iRacingSim64DX11.exe,iRacingUI.exe to simulate iRacing
+// launched. Comma-separated, case-insensitive. Used by AllProcessNames.
+const MockRunningGamesEnv = "MOCK_GAMES"
+
+var mockGameOnce sync.Once
+var mockGames []string
+
+func mockGameNames() []string {
+	mockGameOnce.Do(func() {
+		raw := os.Getenv(MockRunningGamesEnv)
+		if raw == "" {
+			return
+		}
+		for _, s := range strings.Split(raw, ",") {
+			s = strings.TrimSpace(s)
+			if s != "" {
+				mockGames = append(mockGames, s)
+			}
+		}
+	})
+	return mockGames
+}
+
+// AllProcessNames returns lowercased process names of every running process
+// the OS reports. Used by the game-launch watcher to detect known game exes.
+// On Mac/Linux this returns the static base list plus anything injected via
+// MOCK_GAMES env var so dev can simulate launch events.
+func AllProcessNames() []string {
+	base := []string{
+		"iracingui",            // simulated as always running for dev convenience
+		"obs64",
+		"discord",
+		"spotify",
+		"joystickgremlin",
+		"vjoyconf",
+		"fanalab",
+		"irffb",
+		"crewchiefv4",
+		"simhub",
+		"virtualdesktop.streamer.service",
+		"hwinfo64",
+		"streamdeck",
+	}
+	for _, g := range mockGameNames() {
+		base = append(base, strings.ToLower(g))
+	}
+	return base
+}
+
 func TopProcesses(n int) []Process {
 	all := []Process{
 		{PID: 4321, Name: "iRacingSim64DX11", CPUPercent: 38.2, RAMBytes: 6_800_000_000, Description: "iRacing Sim"},

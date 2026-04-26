@@ -22,6 +22,7 @@ import (
 
 	"github.com/hkbla/streamdeck-config/tray/api"
 	"github.com/hkbla/streamdeck-config/tray/config"
+	"github.com/hkbla/streamdeck-config/tray/watch"
 )
 
 const defaultAddr = "127.0.0.1:8765"
@@ -46,7 +47,11 @@ func main() {
 	log.Printf("[tray] docs dir: %s", docs)
 	log.Printf("[tray] listen:   http://%s", *addr)
 
-	srv := newServer(*addr, docs, cfg)
+	// Start the game-launch watcher
+	watcher := watch.New(cfg)
+	watcher.Start(context.Background())
+
+	srv := newServer(*addr, docs, cfg, watcher)
 
 	// Start HTTP server in background
 	go func() {
@@ -74,7 +79,7 @@ func main() {
 	systray.Run(onReady, onExit)
 }
 
-func newServer(addr, docs string, cfg *config.Config) *http.Server {
+func newServer(addr, docs string, cfg *config.Config, watcher *watch.Watcher) *http.Server {
 	mux := http.NewServeMux()
 
 	// Static docs site
@@ -92,7 +97,7 @@ func newServer(addr, docs string, cfg *config.Config) *http.Server {
 	}
 
 	// API
-	api.NewServer(cfg).Register(mux)
+	api.NewServer(cfg, watcher).Register(mux)
 
 	return &http.Server{
 		Addr:         addr,
