@@ -1223,3 +1223,202 @@ function escapeHTML(s) {
   return String(s).replace(/[&<>"']/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[m]));
 }
 function escapeAttr(s) { return escapeHTML(s).replace(/"/g, '&quot;'); }
+
+// ---------- Verify: mouse hardware tests --------------------------------
+// All in-browser. No data leaves the page.
+
+(function () {
+  // -- 1. Polling rate: count pointermove events per second on the test pad
+  const pollPad = $('#mtest-poll-pad');
+  if (!pollPad) return; // verify section not present
+
+  let pollEvents = 0;
+  let pollEventsByMs = []; // sliding 10s window of {ts, count}
+  let pollPeak = 0;
+  pollPad.addEventListener('pointermove', () => { pollEvents++; });
+  setInterval(() => {
+    const now = Date.now();
+    const hz = pollEvents;
+    pollEvents = 0;
+    pollEventsByMs.push({ ts: now, hz });
+    pollEventsByMs = pollEventsByMs.filter(e => now - e.ts < 10_000);
+    if (hz > pollPeak) pollPeak = hz;
+    const avg = pollEventsByMs.reduce((a, e) => a + e.hz, 0) / Math.max(pollEventsByMs.length, 1);
+    $('#mtest-poll-now').textContent = hz;
+    $('#mtest-poll-peak').textContent = pollPeak;
+    $('#mtest-poll-avg').textContent = Math.round(avg);
+    const verdict = $('#mtest-poll-verdict');
+    if (avg === 0) {
+      verdict.textContent = '— move to begin';
+      verdict.className = 'mtest-verdict';
+    } else if (avg >= 800) {
+      verdict.textContent = '✓ ~1000 Hz gaming mouse — good';
+      verdict.className = 'mtest-verdict ok';
+    } else if (avg >= 400) {
+      verdict.textContent = '⚠ ~500 Hz — could go higher (driver / Windows polling rate setting)';
+      verdict.className = 'mtest-verdict warn';
+    } else if (avg >= 90 && avg <= 150) {
+      verdict.textContent = '✗ ~125 Hz — USB default, not gaming-grade. Check driver / Windows registry MouseHID polling';
+      verdict.className = 'mtest-verdict fail';
+    } else {
+      verdict.textContent = `~${Math.round(avg)} Hz — verify with MouseTester for hardware-level reading (browser may throttle)`;
+      verdict.className = 'mtest-verdict warn';
+    }
+  }, 1000);
+
+  // -- 2. Acceleration: track total px moved during slow vs fast drag
+  const accelPad = $('#mtest-accel-pad');
+  let accelDragging = false;
+  let accelStart = null;
+  let accelTotal = 0;
+  let slowResult = null;
+  let fastResult = null;
+  accelPad.addEventListener('pointerdown', e => {
+    accelDragging = true;
+    accelStart = { x: e.clientX, y: e.clientY, t: performance.now() };
+    accelTotal = 0;
+    accelPad.setPointerCapture(e.pointerId);
+  });
+  accelPad.addEventListener('pointermove', e => {
+    if (!accelDragging) return;
+    accelTotal += Math.abs(e.movementX); // count px in raw counts
+  });
+  accelPad.addEventListener('pointerup', e => {
+    if (!accelDragging) return;
+    accelDragging = false;
+    accelPad.releasePointerCapture(e.pointerId);
+    const dur = performance.now() - accelStart.t;
+    const speed = accelTotal / dur; // px/ms
+    if (speed < 1.5) {
+      // SLOW
+      slowResult = accelTotal;
+      $('#mtest-accel-slow').textContent = accelTotal.toFixed(0);
+    } else {
+      // FAST
+      fastResult = accelTotal;
+      $('#mtest-accel-fast').textContent = accelTotal.toFixed(0);
+    }
+    if (slowResult && fastResult) {
+      const ratio = (fastResult / slowResult).toFixed(2);
+      $('#mtest-accel-ratio').textContent = ratio + '×';
+      const verdict = $('#mtest-accel-verdict');
+      if (Math.abs(ratio - 1.0) < 0.15) {
+        verdict.textContent = '✓ Counts match — Enhance Pointer Precision is OFF (correct for gaming).';
+        verdict.className = 'mtest-verdict ok';
+      } else if (ratio > 1.0) {
+        verdict.textContent = `✗ Fast drag covered ${ratio}× more — Enhance Pointer Precision is likely ON. Turn it off in Windows Settings → Mouse.`;
+        verdict.className = 'mtest-verdict fail';
+      } else {
+        verdict.textContent = `Slow drag covered more than fast (${ratio}×) — unusual; re-test with consistent same-distance drags.`;
+        verdict.className = 'mtest-verdict warn';
+      }
+    } else if (slowResult) {
+      $('#mtest-accel-verdict').textContent = 'Now drag the same distance FAST.';
+    } else {
+      $('#mtest-accel-verdict').textContent = 'Slow drag recorded. Now drag the same distance fast.';
+    }
+  });
+  $('#mtest-accel-reset').addEventListener('click', () => {
+    slowResult = fastResult = null;
+    $('#mtest-accel-slow').textContent = $('#mtest-accel-fast').textContent = $('#mtest-accel-ratio').textContent = '—';
+    $('#mtest-accel-verdict').textContent = 'drag slowly first…';
+    $('#mtest-accel-verdict').className = 'mtest-verdict';
+  });
+
+  // -- 3. Drawing canvas (smoothing / jitter visual)
+  const canvas = $('#mtest-draw');
+  const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#5a8';
+  ctx.lineWidth = 1;
+  ctx.fillStyle = '#0a0d12';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  let drawing = false;
+  let last = null;
+  canvas.addEventListener('pointerdown', e => {
+    drawing = true;
+    const r = canvas.getBoundingClientRect();
+    last = { x: e.clientX - r.left, y: e.clientY - r.top };
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!drawing) return;
+    const r = canvas.getBoundingClientRect();
+    const x = e.clientX - r.left, y = e.clientY - r.top;
+    ctx.beginPath();
+    ctx.moveTo(last.x, last.y);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    last = { x, y };
+  });
+  canvas.addEventListener('pointerup', () => { drawing = false; });
+  canvas.addEventListener('pointerleave', () => { drawing = false; });
+  $('#mtest-draw-clear').addEventListener('click', () => {
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  });
+})();
+
+// ---------- Verify: Scimitar mapping check ------------------------------
+(function () {
+  const grid = $('#scim-test-grid');
+  if (!grid) return;
+  const scim = data.scimitar?.buttons || [];
+  if (!scim.length) {
+    grid.innerHTML = '<p class="planned-meta">No Scimitar mapping found in PUBG data.</p>';
+    return;
+  }
+
+  // Render the grid: M1-M12 with expected key, plus a "match" toggle
+  let matched = JSON.parse(localStorage.getItem('gaming-ref:scim-test') || '{}');
+  function render() {
+    grid.innerHTML = scim.map(b => `
+      <div class="scim-test-row ${matched[b.id] ? 'matched' : ''}" data-id="${b.id}">
+        <span class="scim-test-id">${b.id}</span>
+        <span class="scim-test-label">${escapeHTML(b.label)}</span>
+        <span class="scim-test-key">expected: <code>${escapeHTML(b.key)}</code></span>
+        <button type="button" class="wheel-calib-btn scim-test-toggle">${matched[b.id] ? '✓ matched' : 'mark match'}</button>
+      </div>
+    `).join('');
+    grid.querySelectorAll('.scim-test-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.closest('.scim-test-row').dataset.id;
+        matched[id] = !matched[id];
+        localStorage.setItem('gaming-ref:scim-test', JSON.stringify(matched));
+        render();
+      });
+    });
+  }
+  render();
+
+  $('#scim-log-clear').addEventListener('click', () => {
+    matched = {};
+    localStorage.removeItem('gaming-ref:scim-test');
+    $('#scim-log').innerHTML = '';
+    render();
+  });
+
+  // Capture inputs anywhere in the verify section
+  const verifySection = $('#verify');
+  let recent = [];
+  function logEvent(label) {
+    const t = new Date().toLocaleTimeString();
+    $('#scim-event-key').textContent = label;
+    $('#scim-event-time').textContent = 'at ' + t;
+    recent.unshift({ label, t });
+    recent = recent.slice(0, 12);
+    $('#scim-log').innerHTML = recent.map(r =>
+      `<li><code>${escapeHTML(r.label)}</code> <span class="scim-log-t">${r.t}</span></li>`).join('');
+  }
+
+  verifySection.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    let label = e.key;
+    if (e.ctrlKey)  label = 'Ctrl+' + label;
+    if (e.altKey)   label = 'Alt+' + label;
+    if (e.shiftKey && e.key.length > 1) label = 'Shift+' + label;
+    logEvent(label);
+  });
+  verifySection.addEventListener('mousedown', e => {
+    if (e.button === 0) return; // skip primary clicks (used for buttons)
+    const names = { 1: 'Mouse middle', 2: 'Mouse right', 3: 'Mouse back', 4: 'Mouse forward' };
+    logEvent(names[e.button] || ('Mouse btn ' + e.button));
+  });
+})();

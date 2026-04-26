@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=14" />
+  <link rel="stylesheet" href="styles.css?v=15" />
   <script>
     // Stash the initial hash for app.js, then strip it so the browser does not
     // anchor-scroll the section heading under the sticky topbar on first load.
@@ -190,23 +190,73 @@
       <p>Read iRacing <code>app.ini</code>, PUBG <code>GameUserSettings.ini</code>, OpenXR Toolkit <code>settings.cfg</code> — diff against expected values declared in <code>rig-config.json</code> per game. Surface mismatches via toast + Stream Deck cell colour.</p>
     </div>
 
-    <div class="planned-card">
-      <h2>Mouse hardware tests <span class="planned-tag">planned</span></h2>
-      <p>In-browser:
-        <ul>
-          <li><strong>Polling rate</strong> — count <code>pointermove</code> events/sec (expect ~1000)</li>
-          <li><strong>Acceleration</strong> — slow vs fast drag of equal distance, fail if Windows "Enhance Pointer Precision" is on</li>
-          <li><strong>Smoothing / jitter</strong> — visual draw test</li>
-          <li><strong>Windows mouse settings</strong> — read registry, show acceleration on/off</li>
-        </ul>
-        For deeper hardware metrics (malfunction speed, click latency), link out to <a href="https://github.com/microe1/MouseTester" target="_blank">MouseTester</a>.
-      </p>
+    <div class="planned-card planned-card--full">
+      <h2>Mouse hardware tests <span class="planned-tag planned-tag--done">live</span></h2>
+      <p>Move and click your mouse inside the panels below. All tests run in your browser — nothing is uploaded.</p>
+
+      <div class="mtest-grid">
+        <div class="mtest-card">
+          <h3>Polling rate</h3>
+          <p class="mtest-hint">Move your mouse continuously inside the dark area. Expected: ~1000 Hz for a gaming mouse, 125 Hz for default USB.</p>
+          <div class="mtest-pad" id="mtest-poll-pad" tabindex="0">Move mouse here</div>
+          <div class="mtest-readout">
+            <div><strong id="mtest-poll-now">0</strong><span>now Hz</span></div>
+            <div><strong id="mtest-poll-peak">0</strong><span>peak Hz</span></div>
+            <div><strong id="mtest-poll-avg">0</strong><span>avg Hz (10s)</span></div>
+          </div>
+          <div class="mtest-verdict" id="mtest-poll-verdict">— move to begin</div>
+        </div>
+
+        <div class="mtest-card">
+          <h3>Acceleration check</h3>
+          <p class="mtest-hint">Drag horizontally across the bar twice — once slow, once fast. If counts differ a lot, Windows "Enhance Pointer Precision" is ON (which you don't want for aim).</p>
+          <div class="mtest-pad mtest-pad--accel" id="mtest-accel-pad">Drag across</div>
+          <div class="mtest-readout">
+            <div><strong id="mtest-accel-slow">—</strong><span>slow drag (px)</span></div>
+            <div><strong id="mtest-accel-fast">—</strong><span>fast drag (px)</span></div>
+            <div><strong id="mtest-accel-ratio">—</strong><span>ratio</span></div>
+          </div>
+          <div class="mtest-verdict" id="mtest-accel-verdict">drag slowly first…</div>
+          <button type="button" class="wheel-calib-btn" id="mtest-accel-reset">Reset</button>
+        </div>
+
+        <div class="mtest-card">
+          <h3>Smoothing / jitter visual</h3>
+          <p class="mtest-hint">Draw a slow straight line. Smooth curves = mouse-side smoothing. Stair-stepping = sensor dropouts. Real raw input = sharp polyline.</p>
+          <canvas id="mtest-draw" width="380" height="180"></canvas>
+          <button type="button" class="wheel-calib-btn" id="mtest-draw-clear">Clear</button>
+        </div>
+
+        <div class="mtest-card">
+          <h3>Windows acceleration setting</h3>
+          <p class="mtest-hint">Browser can't read the registry directly. Open PowerShell on the gaming PC and run:</p>
+          <pre class="vjoy-code">(Get-ItemProperty 'HKCU:\Control Panel\Mouse').MouseSpeed
+# Returns 0 if "Enhance Pointer Precision" is OFF (correct for gaming).
+# Returns 1 if it's ON (turn it off in Settings → Mouse → Pointer options).</pre>
+        </div>
+      </div>
+
+      <p class="planned-meta">For deeper hardware metrics (malfunction speed, click latency), use <a href="https://github.com/microe1/MouseTester" target="_blank">MouseTester</a> — it polls the device directly without browser throttling.</p>
     </div>
 
-    <div class="planned-card">
-      <h2>Scimitar mapping check <span class="planned-tag">planned</span></h2>
-      <p>Press each Scimitar button (M1–M12); page captures the keystroke / mouse button it sends; diffs against the mapping declared in the PUBG keyboard JSON. Reveals iCUE profile mismatches without parsing iCUE files.</p>
-      <p class="planned-meta">Future: <a href="https://github.com/CorsairOfficial/cue-sdk" target="_blank">Corsair CUE SDK</a> integration for active-profile read.</p>
+    <div class="planned-card planned-card--full">
+      <h2>Scimitar mapping check <span class="planned-tag planned-tag--done">live</span></h2>
+      <p>Press each Scimitar button (M1–M12). The page captures the resulting keystroke / mouse button and shows it next to the expected mapping from your PUBG profile. Mismatch = iCUE profile may have drifted.</p>
+
+      <div class="scim-test-wrap">
+        <div class="scim-test-grid" id="scim-test-grid"></div>
+        <div class="scim-test-aside">
+          <h3>Latest input</h3>
+          <div class="scim-event" id="scim-event">
+            <span id="scim-event-key">—</span>
+            <span id="scim-event-time">click in this section + press a Scimitar button</span>
+          </div>
+          <h3>Recent</h3>
+          <ol class="scim-log" id="scim-log"></ol>
+          <button type="button" class="wheel-calib-btn" id="scim-log-clear">Clear</button>
+          <p class="planned-meta">Click "match" on a button row when its expected key matches what you just pressed. Auto-detection by friendly name (e.g. "Flash" = 4) coming later.</p>
+        </div>
+      </div>
     </div>
 
     <div class="planned-card">
@@ -1616,6 +1666,6 @@ Write-Host "[report] generated: $LogDir\report.html" -ForegroundColor Cyan</pre>
 }
 </script>
 
-<script src="app.js?v=24"></script>
+<script src="app.js?v=25"></script>
 </body>
 </html>

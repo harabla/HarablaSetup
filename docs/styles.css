@@ -929,6 +929,134 @@ a.ref-card:hover { background: var(--bg-elev-2); border-color: var(--text-faint)
 }
 .planned-tag--done { color: var(--cat-green); background: rgba(120, 200, 120, 0.12); }
 
+/* Verify — mouse + scimitar test widgets */
+.planned-card--full { grid-column: 1 / -1; }
+
+.mtest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+.mtest-card {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.mtest-card h3 {
+  margin: 0 0 6px; font-size: 14px;
+  color: var(--text);
+}
+.mtest-hint { font-size: 12px; color: var(--text-dim); margin: 0 0 10px; line-height: 1.5; }
+.mtest-pad {
+  background: linear-gradient(135deg, #0a0d12 0%, #1a1d22 100%);
+  border: 1px dashed var(--text-faint);
+  border-radius: 6px;
+  height: 80px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-faint);
+  font-size: 12px;
+  cursor: crosshair;
+  user-select: none;
+  touch-action: none;
+}
+.mtest-pad--accel { height: 50px; cursor: ew-resize; }
+.mtest-readout {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 10px 0;
+}
+.mtest-readout > div {
+  text-align: center;
+  background: var(--bg-elev);
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+.mtest-readout strong {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 18px; font-weight: 700;
+  color: var(--cat-teal);
+}
+.mtest-readout span {
+  font-size: 10px; color: var(--text-faint);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.mtest-verdict {
+  font-size: 12px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: var(--bg-elev);
+  color: var(--text-dim);
+}
+.mtest-verdict.ok   { color: var(--cat-green); border-left: 3px solid var(--cat-green); }
+.mtest-verdict.warn { color: var(--cat-amber); border-left: 3px solid var(--cat-amber); }
+.mtest-verdict.fail { color: var(--cat-red);   border-left: 3px solid var(--cat-red); }
+#mtest-draw {
+  display: block; width: 100%;
+  background: #0a0d12;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+/* Scimitar test */
+.scim-test-wrap {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-top: 12px;
+}
+@media (max-width: 900px) { .scim-test-wrap { grid-template-columns: 1fr; } }
+.scim-test-grid { display: flex; flex-direction: column; gap: 4px; }
+.scim-test-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 1.2fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--text-faint);
+  border-radius: 6px;
+  font-size: 13px;
+}
+.scim-test-row.matched { border-left-color: var(--cat-green); }
+.scim-test-id { font-family: 'IBM Plex Mono', monospace; font-weight: 700; color: var(--cat-amber); }
+.scim-test-label { font-weight: 500; }
+.scim-test-key { font-size: 11px; color: var(--text-dim); }
+.scim-test-row.matched .scim-test-toggle { color: var(--cat-green); }
+
+.scim-test-aside {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-size: 13px;
+}
+.scim-test-aside h3 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); }
+.scim-test-aside h3:not(:first-child) { margin-top: 14px; }
+.scim-event {
+  background: var(--bg-elev);
+  padding: 8px 10px;
+  border-radius: 4px;
+  display: flex; flex-direction: column; gap: 2px;
+  border-left: 3px solid var(--cat-teal);
+}
+#scim-event-key { font-family: 'IBM Plex Mono', monospace; font-size: 16px; font-weight: 600; color: var(--cat-teal); }
+#scim-event-time { font-size: 11px; color: var(--text-faint); }
+.scim-log {
+  list-style: decimal inside;
+  padding: 0; margin: 0;
+  max-height: 220px; overflow-y: auto;
+}
+.scim-log li { font-size: 12px; padding: 3px 0; color: var(--text-dim); }
+.scim-log code { color: var(--text); }
+.scim-log-t { color: var(--text-faint); margin-left: 6px; font-size: 11px; }
+
 /* Status page — live control center */
 .status-offline {
   background: var(--bg-elev);
