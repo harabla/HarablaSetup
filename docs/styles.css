@@ -1177,6 +1177,37 @@ a.ref-card:hover { background: var(--bg-elev-2); border-color: var(--text-faint)
 .status-card h2 { margin: 0 0 10px; font-size: 14px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
 .status-card--wide { grid-column: 1 / -1; }
 
+.status-games {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 8px;
+}
+.status-games-empty { color: var(--text-faint); font-size: 13px; padding: 14px; text-align: center; }
+.status-game {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border-radius: 6px;
+  border-left: 3px solid var(--text-faint);
+}
+.status-game.on  { border-left-color: var(--cat-green); }
+.status-game.off { border-left-color: var(--text-faint); opacity: 0.7; }
+.status-game-name { font-size: 13px; }
+.status-game-name strong { font-weight: 600; }
+.status-game-meta { font-size: 11px; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; }
+.status-game-chip {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.4px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  width: max-content;
+  margin-top: 2px;
+}
+.status-game-chip.ok   { color: var(--cat-green); background: rgba(120, 200, 120, 0.12); }
+.status-game-chip.warn { color: var(--cat-amber); background: rgba(220, 170, 60, 0.12); }
+.status-game-chip.dim  { color: var(--text-faint); background: var(--bg-elev); }
+
 .status-displays { display: flex; flex-direction: column; gap: 6px; }
 .status-disp {
   display: grid;

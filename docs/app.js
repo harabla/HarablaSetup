@@ -134,6 +134,12 @@ async function probeTray() {
         if (cr.ok) live.config = await cr.json();
       } catch (_) {}
     }
+    // Game-launch watcher state (live games + last verify per game)
+    try {
+      const gr = await fetch('/api/games', { cache: 'no-store' });
+      if (gr.ok) live.games = await gr.json();
+    } catch (_) {}
+
     rerenderRunningSurfaces();
     renderHealthCards();
     renderStatusPage();
@@ -264,6 +270,7 @@ function renderOverviewTile() {
   const healthEl = $('#overview-live-health');
   const procsEl  = $('#overview-live-procs');
   const sessionEl = $('#overview-live-session');
+  const gameEl   = $('#overview-live-game');
   if (!trayEl) return;
 
   if (!live.connected) {
@@ -272,6 +279,7 @@ function renderOverviewTile() {
     healthEl.textContent = '—';
     procsEl.textContent = '—';
     sessionEl.textContent = '—';
+    if (gameEl) { gameEl.textContent = '—'; gameEl.className = ''; }
     return;
   }
   trayEl.textContent = '● connected';
@@ -289,7 +297,26 @@ function renderOverviewTile() {
     procsEl.textContent = live.processes.length + ' processes';
   }
 
-  // Last session: not implemented yet
+  // Active game from /api/games — find one running, show name + verify state
+  if (gameEl && live.games) {
+    const running = Object.values(live.games).find(g => g.running);
+    if (running) {
+      const v = running.last_verify;
+      let suffix = '';
+      let cls = 'on';
+      if (v) {
+        if (v.drift_count > 0)      { suffix = ` · ${v.drift_count} drift${v.drift_count !== 1 ? 's' : ''}`; cls = ''; }
+        else if (v.missing_files)   { suffix = ` · ${v.missing_files} file${v.missing_files !== 1 ? 's' : ''} missing`; cls = ''; }
+        else if (v.ok_count)        { suffix = ' · verified ✓'; cls = 'on'; }
+      }
+      gameEl.textContent = `🎮 ${running.name}${suffix}`;
+      gameEl.className = cls;
+    } else {
+      gameEl.textContent = 'none running';
+      gameEl.className = '';
+    }
+  }
+
   sessionEl.textContent = '— (planned)';
 }
 function renderHealthCards() {
@@ -332,6 +359,37 @@ function renderStatusPage() {
   $('#status-updated').textContent = live.lastRefresh
     ? live.lastRefresh.toLocaleTimeString()
     : '—';
+
+  // Games (watcher state)
+  const gamesEl = $('#status-games');
+  if (gamesEl && live.games) {
+    const entries = Object.values(live.games);
+    if (!entries.length) {
+      gamesEl.innerHTML = '<div class="status-games-empty">No games configured. Add to rig-config.json.</div>';
+    } else {
+      gamesEl.innerHTML = entries.map(g => {
+        const v = g.last_verify;
+        let verifyChip = '<span class="status-game-chip dim">no verify yet</span>';
+        if (v) {
+          if (v.drift_count > 0) {
+            verifyChip = `<span class="status-game-chip warn">${v.drift_count} drift${v.drift_count !== 1 ? 's' : ''}</span>`;
+          } else if (v.missing_files) {
+            verifyChip = `<span class="status-game-chip warn">${v.missing_files} file${v.missing_files !== 1 ? 's' : ''} missing</span>`;
+          } else {
+            verifyChip = `<span class="status-game-chip ok">✓ ${v.ok_count} ok</span>`;
+          }
+        }
+        const since = g.last_launch
+          ? ` · since ${new Date(g.last_launch).toLocaleTimeString()}`
+          : '';
+        return `<div class="status-game ${g.running ? 'on' : 'off'}">
+          <div class="status-game-name">${g.running ? '● ' : '○ '}<strong>${escapeHTML(g.name)}</strong></div>
+          <div class="status-game-meta">${g.running ? 'running' : 'not running'}${since}</div>
+          ${verifyChip}
+        </div>`;
+      }).join('');
+    }
+  }
 
   // Displays
   const dispEl = $('#status-displays');
