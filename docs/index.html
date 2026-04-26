@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=11" />
+  <link rel="stylesheet" href="styles.css?v=12" />
   <script>
     // Stash the initial hash for app.js, then strip it so the browser does not
     // anchor-scroll the section heading under the sticky topbar on first load.
@@ -414,9 +414,15 @@ REM work.bat  (all on; placeholder for future app-launch additions)
   </details>
 
   <details class="pcsetup-group">
-    <summary><h2 style="display:inline;">🩺 Health check &amp; rig config (planned tooling)</h2></summary>
-    <p class="pcsetup-hint">Design notes for a small standalone PowerShell app that verifies installs, checks expected configs, and stores per-PC paths so other scripts (monitoring, display toggles, audio scripts) don't need hard-coded paths.</p>
+    <summary><h2 style="display:inline;">🩺 Health check &amp; rig config</h2></summary>
+    <p class="pcsetup-hint">Per-PC paths in <code>rig-config.json</code>; live health rendered below when the tray is running. Design notes follow.</p>
     <div style="padding:14px 18px;">
+
+      <!-- Live health cards rendered by app.js when tray is connected -->
+      <div id="health-live" class="health-live" hidden>
+        <h3 style="margin:0 0 8px;font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">Live health <span id="health-config-from" style="text-transform:none;font-weight:400;color:var(--text-faint);"></span></h3>
+        <div id="health-cards" class="health-cards"></div>
+      </div>
 
       <h3 style="margin:0 0 6px;font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">What the app does</h3>
       <ul class="pcsetup-bullets">
@@ -1390,6 +1396,6 @@ Write-Host "[report] generated: $LogDir\report.html" -ForegroundColor Cyan</pre>
 }
 </script>
 
-<script src="app.js?v=21"></script>
+<script src="app.js?v=22"></script>
 </body>
 </html>

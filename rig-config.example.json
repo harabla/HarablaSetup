@@ -1,0 +1,49 @@
+{
+  "_comment": "Per-PC paths for the streamdeck-config tray + scripts. Copy to rig-config.json (gitignored) and fill in. %ENVVAR% is expanded on Windows.",
+
+  "tools": {
+    "soundVolumeView":  "C:\\Tools\\SoundVolumeView\\SoundVolumeView.exe",
+    "multiMonitorTool": "C:\\Tools\\MultiMonitorTool\\MultiMonitorTool.exe",
+    "presentMon":       "C:\\Tools\\PresentMon\\PresentMon-1.10.0-x64.exe",
+    "hwinfo":           "C:\\Program Files\\HWiNFO64\\HWiNFO64.exe",
+    "joystickGremlin":  "C:\\Program Files (x86)\\Joystick Gremlin\\joystick_gremlin.exe",
+    "iRFFB":            "C:\\Program Files\\iRFFB2022\\iRFFB.exe"
+  },
+
+  "games": {
+    "iRacing": {
+      "ui":        "C:\\Program Files (x86)\\iRacing\\iRacingUI.exe",
+      "sim":       "C:\\Program Files (x86)\\iRacing\\iRacingSim64DX11.exe",
+      "documents": "%USERPROFILE%\\Documents\\iRacing",
+      "settings":  ["app.ini", "rendererDX11.ini", "dxconfig.ini"]
+    },
+    "PUBG": {
+      "exe":      "C:\\Program Files (x86)\\Steam\\steamapps\\common\\PUBG\\TslGame.exe",
+      "settings": ["%LOCALAPPDATA%\\TslGame\\Saved\\Config\\WindowsNoEditor\\GameUserSettings.ini"]
+    }
+  },
+
+  "vr": {
+    "openXRToolkit":  "%APPDATA%\\OpenXR-Toolkit",
+    "virtualDesktop": "C:\\Program Files\\Virtual Desktop Streamer\\VirtualDesktop.Streamer.Service.exe"
+  },
+
+  "displays": {
+    "topLeft":   "\\\\.\\DISPLAY2",
+    "topRight":  "\\\\.\\DISPLAY3",
+    "ultrawide": "\\\\.\\DISPLAY1"
+  },
+
+  "logs": "C:\\Logs",
+
+  "deck": {
+    "appPath":     "C:\\Program Files\\Elgato\\StreamDeck\\StreamDeck.exe",
+    "profilesDir": "%APPDATA%\\Elgato\\StreamDeck\\ProfilesV2"
+  },
+
+  "audio": {
+    "discord": "Discord",
+    "spotify": "Spotify",
+    "iRacing": "iRacingSim64DX11"
+  }
+}

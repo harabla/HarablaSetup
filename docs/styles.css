@@ -266,6 +266,9 @@ code {
   color: var(--text);
 }
 .sd-cell:hover { transform: translateY(-1px); border-color: var(--text-faint); box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
+.sd-cell.sd-firing    { outline: 2px solid var(--cat-amber); }
+.sd-cell.sd-fired-ok  { outline: 2px solid var(--cat-green); transition: outline-color 0.2s; }
+.sd-cell.sd-fired-err { outline: 2px solid var(--cat-red);   transition: outline-color 0.2s; }
 .sd-cell .sd-glyph {
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
   font-size: 24px; font-weight: 600; line-height: 1;
@@ -811,6 +814,47 @@ code {
   margin: 0;
 }
 .vjoy-caveats { background: rgba(220, 90, 80, 0.04); border-color: rgba(220, 90, 80, 0.25); }
+
+/* Live health cards (shown when tray connected) */
+.health-live {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  background: var(--bg);
+  border: 1px solid rgba(120, 200, 120, 0.25);
+  border-radius: 8px;
+}
+.health-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 8px;
+}
+.health-card {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--text-faint);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+.health-card--ok   { border-left-color: var(--cat-green); }
+.health-card--warn { border-left-color: var(--cat-amber); }
+.health-card--fail { border-left-color: var(--cat-red); }
+.health-card-head {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 4px;
+}
+.health-status {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  font-size: 11px; font-weight: 700;
+  background: var(--bg);
+}
+.health-card--ok   .health-status { color: var(--cat-green); border: 1px solid var(--cat-green); }
+.health-card--warn .health-status { color: var(--cat-amber); border: 1px solid var(--cat-amber); }
+.health-card--fail .health-status { color: var(--cat-red);   border: 1px solid var(--cat-red);   }
+.health-detail { color: var(--text-dim); font-size: 12px; }
+.health-fix { margin-top: 4px; color: var(--cat-amber); font-size: 11px; font-style: italic; }
 
 /* PC setup walkthrough */
 section#pcsetup { counter-reset: pcsetup-step; }

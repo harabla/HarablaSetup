@@ -21,24 +21,32 @@ import (
 	"github.com/getlantern/systray"
 
 	"github.com/hkbla/streamdeck-config/tray/api"
+	"github.com/hkbla/streamdeck-config/tray/config"
 )
 
 const defaultAddr = "127.0.0.1:8765"
 
 var (
-	addr    = flag.String("addr", defaultAddr, "HTTP listen address")
-	docsDir = flag.String("docs", "", "Path to docs/ directory (default: auto-detect)")
-	noTray  = flag.Bool("no-tray", false, "Run without tray icon (CLI / headless mode)")
+	addr       = flag.String("addr", defaultAddr, "HTTP listen address")
+	docsDir    = flag.String("docs", "", "Path to docs/ directory (default: auto-detect)")
+	configPath = flag.String("config", "", "Path to rig-config.json (default: auto-detect)")
+	noTray     = flag.Bool("no-tray", false, "Run without tray icon (CLI / headless mode)")
 )
 
 func main() {
 	flag.Parse()
 
+	cfg, err := config.Load(*configPath)
+	if err != nil {
+		log.Fatalf("[tray] config load failed: %v", err)
+	}
+	log.Printf("[tray] config:   %s", cfg.LoadedFrom())
+
 	docs := resolveDocsDir(*docsDir)
 	log.Printf("[tray] docs dir: %s", docs)
 	log.Printf("[tray] listen:   http://%s", *addr)
 
-	srv := newServer(*addr, docs)
+	srv := newServer(*addr, docs, cfg)
 
 	// Start HTTP server in background
 	go func() {
@@ -66,7 +74,7 @@ func main() {
 	systray.Run(onReady, onExit)
 }
 
-func newServer(addr, docs string) *http.Server {
+func newServer(addr, docs string, cfg *config.Config) *http.Server {
 	mux := http.NewServeMux()
 
 	// Static docs site
@@ -74,7 +82,7 @@ func newServer(addr, docs string) *http.Server {
 	mux.Handle("/", fs)
 
 	// API
-	api.Register(mux)
+	api.NewServer(cfg).Register(mux)
 
 	return &http.Server{
 		Addr:         addr,

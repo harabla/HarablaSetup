@@ -122,18 +122,49 @@ async function probeTray() {
     live.displays  = s.displays;
     live.vjoy      = s.vjoy;
     live.health    = s.health;
+    live.configFrom = s.config_from;
     if (!live.connected) {
       live.connected = true;
       updateLiveBadge(true);
+      // Fetch full config once on connect (it's static for a session)
+      try {
+        const cr = await fetch('/api/config', { cache: 'no-store' });
+        if (cr.ok) live.config = await cr.json();
+      } catch (_) {}
     }
     rerenderRunningSurfaces();
+    renderHealthCards();
   } catch (e) {
     if (live.connected) {
       live.connected = false;
       updateLiveBadge(false);
       rerenderRunningSurfaces();
+      renderHealthCards();
     }
   }
+}
+function renderHealthCards() {
+  const wrap = $('#health-live');
+  if (!wrap) return;
+  if (!live.connected || !live.health) {
+    wrap.hidden = true;
+    return;
+  }
+  wrap.hidden = false;
+  const meta = $('#health-config-from');
+  if (meta) meta.textContent = live.configFrom ? '· config: ' + live.configFrom : '';
+  const cards = $('#health-cards');
+  const entries = Object.entries(live.health);
+  cards.innerHTML = entries.map(([k, c]) => `
+    <div class="health-card health-card--${escapeHTML(c.status)}">
+      <div class="health-card-head">
+        <span class="health-status">${c.status === 'ok' ? '✓' : c.status === 'warn' ? '!' : '✗'}</span>
+        <strong>${escapeHTML(c.name)}</strong>
+      </div>
+      ${c.detail ? `<div class="health-detail">${escapeHTML(c.detail)}</div>` : ''}
+      ${c.fix_hint ? `<div class="health-fix">${escapeHTML(c.fix_hint)}</div>` : ''}
+    </div>
+  `).join('');
 }
 function updateLiveBadge(on) {
   const el = $('#tray-status');
@@ -150,6 +181,36 @@ window.addEventListener('DOMContentLoaded', () => {
   probeTray();
   setInterval(probeTray, 10_000);
 });
+
+// Map a Display-profile cell to a tray action. Recognizes labels we ship.
+// Display IDs come from the live config so the mapping stays correct.
+function cellToDisplayAction(cell) {
+  const cfg = (live.config && live.config.displays) || {};
+  const label = (cell.label || '').toLowerCase();
+  if (label.startsWith('top-l'))   return { action: 'displays.toggle', params: { id: cfg.topLeft } };
+  if (label.startsWith('top-r'))   return { action: 'displays.toggle', params: { id: cfg.topRight } };
+  if (label.startsWith('ultra'))   return { action: 'displays.toggle', params: { id: cfg.ultrawide } };
+  if (label === 'all on')          return { action: 'displays.preset', params: { preset: 'all-on' } };
+  if (label === 'all off')         return { action: 'displays.preset', params: { preset: 'all-off' } };
+  if (label === 'vr race')         return { action: 'displays.preset', params: { preset: 'vr-race' } };
+  if (label === 'work')            return { action: 'displays.preset', params: { preset: 'work' } };
+  return null;
+}
+
+// POST an action to the tray. Resolves to { status, detail, output }.
+async function trayAction(action, params = {}) {
+  if (!live.connected) return { status: 'error', detail: 'tray not connected' };
+  try {
+    const r = await fetch('/api/action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, params }),
+    });
+    return await r.json();
+  } catch (e) {
+    return { status: 'error', detail: String(e) };
+  }
+}
 
 function readJSON(id) {
   const el = document.getElementById(id);
@@ -190,23 +251,38 @@ function renderStreamdeck(container, grid) {
       <div class="sd-label">${cell.label || ''}</div>
     `;
     if (cell.type !== 'empty') {
-      div.addEventListener('click', () => {
+      div.addEventListener('click', async () => {
         if (isProfileSwitch) {
           setTab(cell.target);
-        } else if (isLauncher) {
-          toggleRunning(cell.app);
-        } else {
-          showDetail({
-            title: cell.label,
-            cat: cell.cat,
-            rows: [
-              ['Type', cell.type],
-              cell.plugin ? ['Plugin', cell.plugin] : null,
-              ['Notes', cell.notes],
-            ].filter(Boolean),
-            macro: cell.macro,
-          });
+          return;
         }
+        if (isLauncher) {
+          toggleRunning(cell.app);
+          return;
+        }
+        // Display cells: when tray is connected, actually fire the action
+        if (live.connected && cell.type === 'system' && container.dataset.grid === 'streamdeck-display') {
+          const action = cellToDisplayAction(cell);
+          if (action) {
+            div.classList.add('sd-firing');
+            const r = await trayAction(action.action, action.params);
+            div.classList.remove('sd-firing');
+            div.classList.add(r.status === 'ok' ? 'sd-fired-ok' : 'sd-fired-err');
+            setTimeout(() => div.classList.remove('sd-fired-ok', 'sd-fired-err'), 800);
+            return;
+          }
+        }
+        // Default: show detail panel
+        showDetail({
+          title: cell.label,
+          cat: cell.cat,
+          rows: [
+            ['Type', cell.type],
+            cell.plugin ? ['Plugin', cell.plugin] : null,
+            ['Notes', cell.notes],
+          ].filter(Boolean),
+          macro: cell.macro,
+        });
       });
     }
     container.appendChild(div);
