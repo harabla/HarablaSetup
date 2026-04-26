@@ -1593,3 +1593,145 @@ function escapeAttr(s) { return escapeHTML(s).replace(/"/g, '&quot;'); }
     logEvent(names[e.button] || ('Mouse btn ' + e.button));
   });
 })();
+
+// ---------- Tune: sensitivity calculator + game library + add-a-game ----------
+//
+// Yaw constants (deg per count at sens=1) for popular games. Source-engine
+// (0.022) is canonical. Other games' constants vary because their slider
+// scales differ — PUBG goes 1–100, OW goes ~5, etc — so a slider value of
+// "32" means very different rotations across games.
+//
+// ALWAYS verify against mouse-sensitivity.com before settling — these are
+// starting-point estimates, calibrated against documented user feel where
+// possible.
+//
+// Formula: cm/360 = 2.54 × 360 / (DPI × sens × yaw)
+const GAME_YAW = [
+  { name: 'CS2',                  yaw: 0.022,    notes: 'Source-engine canonical. 0.022° per count at sens 1.' },
+  { name: 'Counter-Strike: GO',   yaw: 0.022,    notes: 'Source-engine.' },
+  { name: 'Apex Legends',         yaw: 0.022,    notes: 'Source-engine derivative.' },
+  { name: 'Quake / Quake Champions', yaw: 0.022, notes: 'Source-style.' },
+  { name: 'Escape from Tarkov',   yaw: 0.022,    notes: 'Source-style.' },
+  { name: 'Rainbow Six Siege',    yaw: 0.02,     notes: 'Close to Source.' },
+  { name: 'Valorant',             yaw: 0.07,     notes: '0.07 at sens 1 (higher per-count rotation than Source).' },
+  { name: 'Overwatch / OW2',      yaw: 0.0066,   notes: 'OW-family — much smaller per-count value at sens 1.' },
+  { name: 'Call of Duty (MW/WZ)', yaw: 0.0066,   notes: 'OW-family. "Multiplier" sens 1.' },
+  { name: 'Destiny 2',            yaw: 0.0066,   notes: 'OW-family.' },
+  { name: 'Halo Infinite',        yaw: 0.0066,   notes: 'OW-family.' },
+  { name: 'Battlefield (BF1+)',   yaw: 0.0079,   notes: '"Soldier" sens. ADS uses different formula.' },
+  // PUBG slider 1–100; yaw much smaller than Source. Calibrated so 800 DPI ×
+  // 32 sens hipfire ≈ 41 cm/360 (matches the user's documented PUBG feel).
+  { name: 'PUBG (hipfire)',       yaw: 0.000871, notes: 'Hipfire only. Scope sens uses FOV correction — use mouse-sensitivity.com.' },
+  { name: 'Fortnite',             yaw: 0.5715,   notes: 'X-axis at sens 1. Different scale entirely.' },
+];
+
+(function () {
+  const fromSel = $('#tune-from-game');
+  if (!fromSel) return; // Tune section not present
+  const toSel = $('#tune-to-game');
+
+  // Populate dropdowns
+  const opts = GAME_YAW.map(g => `<option value="${g.yaw}">${g.name}</option>`).join('');
+  fromSel.innerHTML = opts;
+  toSel.innerHTML = opts;
+
+  // Defaults: From PUBG, To CS2 (most common ask)
+  fromSel.value = String(GAME_YAW.find(g => g.name === 'PUBG (hipfire)').yaw);
+  toSel.value   = String(GAME_YAW.find(g => g.name === 'CS2').yaw);
+
+  function calc() {
+    const fromYaw  = parseFloat(fromSel.value);
+    const fromDpi  = parseFloat($('#tune-from-dpi').value);
+    const fromSens = parseFloat($('#tune-from-sens').value);
+    const toYaw    = parseFloat(toSel.value);
+    const toDpi    = parseFloat($('#tune-to-dpi').value);
+
+    if (![fromYaw, fromDpi, fromSens, toYaw, toDpi].every(v => v > 0)) {
+      $('#tune-from-cm').textContent = '—';
+      $('#tune-to-sens').textContent = '—';
+      $('#tune-to-cm').textContent   = '—';
+      return;
+    }
+    // cm/360 = 360 / (DPI × sens × yaw) × 2.54
+    const fromCm = 2.54 * 360 / (fromDpi * fromSens * fromYaw);
+    // For target game: solve for sens given same cm/360
+    // toSens = 2.54 × 360 / (toDpi × toYaw × cm)
+    const toSens = 2.54 * 360 / (toDpi * toYaw * fromCm);
+    const toCm   = 2.54 * 360 / (toDpi * toSens * toYaw);
+
+    $('#tune-from-cm').textContent = fromCm.toFixed(1);
+    $('#tune-to-sens').textContent = toSens.toFixed(3);
+    $('#tune-to-cm').textContent   = toCm.toFixed(1);
+  }
+
+  ['tune-from-dpi', 'tune-from-sens', 'tune-to-dpi'].forEach(id => $('#'+id).addEventListener('input', calc));
+  fromSel.addEventListener('change', calc);
+  toSel.addEventListener('change', calc);
+  calc();
+
+  // Game library — clickable rows pre-fill the converter
+  const lib = $('#tune-library');
+  if (lib) {
+    lib.innerHTML = GAME_YAW.map(g => `
+      <div class="tune-lib-row" data-name="${escapeHTML(g.name)}" data-yaw="${g.yaw}">
+        <span class="tune-lib-name">${escapeHTML(g.name)}</span>
+        <span class="tune-lib-yaw">yaw <code>${g.yaw}</code></span>
+        <span class="tune-lib-notes">${escapeHTML(g.notes)}</span>
+        <span class="tune-lib-actions">
+          <button type="button" class="wheel-calib-btn" data-target="from">Set as From</button>
+          <button type="button" class="wheel-calib-btn" data-target="to">Set as To</button>
+        </span>
+      </div>
+    `).join('');
+    lib.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const row = e.target.closest('.tune-lib-row');
+        const yaw = row.dataset.yaw;
+        const target = e.target.dataset.target;
+        if (target === 'from') fromSel.value = yaw;
+        if (target === 'to')   toSel.value = yaw;
+        calc();
+      });
+    });
+  }
+})();
+
+// Add-a-game JSON generator
+(function () {
+  const btn = $('#addgame-generate');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    const name    = $('#addgame-name').value.trim();
+    const exeRaw  = $('#addgame-exe').value.trim();
+    const gfx     = $('#addgame-gfx').value.trim();
+    const format  = $('#addgame-format').value;
+    const monitor = $('#addgame-monitor').value === 'true';
+
+    if (!name) {
+      alert('Game name is required');
+      return;
+    }
+    const exes = exeRaw.split(',').map(s => s.trim().replace(/\.exe$/i, '')).filter(Boolean);
+
+    const block = {};
+    if (exes.length === 1) block.exe = exes[0];
+    else if (exes.length > 1) block.exe = exes;
+    if (gfx) {
+      block.settings_files = [{
+        category: 'graphics',
+        format,
+        path: gfx,
+        expected: { '_TODO': 'Read this file once and snapshot interesting keys here. Or run: tray POST /api/verify/<name>/baseline after first launch.' },
+      }];
+    }
+    if (monitor) {
+      block.monitoring = { auto: true, wrapper: `monitor-${name.toLowerCase().replace(/\s+/g, '-')}.ps1` };
+    }
+
+    const wrapped = { games: { [name]: block } };
+    const json = JSON.stringify(wrapped, null, 2);
+    const out = $('#addgame-output');
+    out.textContent = `// Drop the block under "games" in your rig-config.json:\n\n${json}\n\n// Then duplicate scripts/monitor-iracing.ps1 to scripts/${(block.monitoring || {}).wrapper || '<game>.ps1'}\n// (if monitoring=true) and adjust the iRacing-specific bits.`;
+    out.hidden = false;
+  });
+})();

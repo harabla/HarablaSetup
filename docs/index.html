@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=17" />
+  <link rel="stylesheet" href="styles.css?v=18" />
   <script>
     // Stash the initial hash for app.js, then strip it so the browser does not
     // anchor-scroll the section heading under the sticky topbar on first load.
@@ -151,24 +151,99 @@
 <section id="tune">
   <header class="section-head">
     <h1>Tune</h1>
-    <p class="lede">Find sensible starting points for new games and new settings. <strong>Status: planned, not built yet.</strong></p>
+    <p class="lede">Find sensible starting points for new games and new settings. Sensitivity calculator + game library + "add a game" generator.</p>
   </header>
 
   <div class="planned-grid">
-    <div class="planned-card">
-      <h2>Sensitivity calculator <span class="planned-tag">planned</span></h2>
-      <p>cm/360° from your current PUBG baseline (DPI 800 · sens 32 · ADS 20 · 4× scope 20 = ~41 cm/360°). Pick a new game from the list, get a suggested in-game sens that matches the same feel.</p>
-      <p class="planned-meta">Game multipliers imported from <a href="https://github.com/Wareya/Sensitivity-Database" target="_blank">Wareya/Sensitivity-Database</a> (MIT). For ADS / scoped conversions in tactical FPS, link out to <a href="https://www.mouse-sensitivity.com" target="_blank">mouse-sensitivity.com</a> with values pre-filled.</p>
+    <div class="planned-card planned-card--full">
+      <h2>Sensitivity converter <span class="planned-tag planned-tag--done">live</span></h2>
+      <p>Match feel across games using <strong>cm per 360°</strong> — the only universally comparable metric. Pick your baseline game, see your current cm/360°, then pick a target game to get the matching sens.</p>
+
+      <div class="tune-converter">
+        <div class="tune-row">
+          <div class="tune-cell">
+            <label>From game</label>
+            <select id="tune-from-game"></select>
+          </div>
+          <div class="tune-cell">
+            <label>DPI</label>
+            <input type="number" id="tune-from-dpi" value="800" min="100" max="32000" step="50">
+          </div>
+          <div class="tune-cell">
+            <label>In-game sens</label>
+            <input type="number" id="tune-from-sens" value="32" min="0.001" step="0.01">
+          </div>
+          <div class="tune-cell tune-cell--result">
+            <label>cm / 360°</label>
+            <strong id="tune-from-cm">—</strong>
+          </div>
+        </div>
+
+        <div class="tune-arrow">→ matched at the same cm/360° →</div>
+
+        <div class="tune-row">
+          <div class="tune-cell">
+            <label>To game</label>
+            <select id="tune-to-game"></select>
+          </div>
+          <div class="tune-cell">
+            <label>DPI</label>
+            <input type="number" id="tune-to-dpi" value="800" min="100" max="32000" step="50">
+          </div>
+          <div class="tune-cell tune-cell--result">
+            <label>Suggested sens</label>
+            <strong id="tune-to-sens">—</strong>
+          </div>
+          <div class="tune-cell tune-cell--result">
+            <label>cm / 360°</label>
+            <strong id="tune-to-cm">—</strong>
+          </div>
+        </div>
+      </div>
+
+      <p class="planned-meta">Yaw constants are bundled inline; verified against <a href="https://www.mouse-sensitivity.com" target="_blank">mouse-sensitivity.com</a> for the games in the library. For ADS / scoped conversions (tactical shooters with multiple zoom levels), use mouse-sensitivity.com's tool — its zoom-distance formulas are more thorough than what fits in a side card.</p>
     </div>
 
-    <div class="planned-card">
-      <h2>"Add a game" wizard <span class="planned-tag">planned</span></h2>
-      <p>Walk through populating <code>games.&lt;name&gt;</code> in <code>rig-config.json</code> — exe paths, settings file paths, expected values, monitoring config, sensitivity. Once added, the game gets verify + monitor + sens recommendations for free.</p>
+    <div class="planned-card planned-card--full">
+      <h2>Game library <span class="planned-tag planned-tag--done">live</span></h2>
+      <p>Bundled yaw constants for common games — the multiplier that converts in-game sens into degrees-per-count. Click any row to populate the converter above with that game pre-filled.</p>
+      <div class="tune-library" id="tune-library"></div>
     </div>
 
-    <div class="planned-card">
-      <h2>Settings change log <span class="planned-tag">planned</span></h2>
-      <p>When you change a setting (FFB strength, FOV, sens, graphics quality), log it with a timestamp + a one-line "why" + which session it was tried in. Helps correlate "felt different today" with "I changed X yesterday".</p>
+    <div class="planned-card planned-card--full">
+      <h2>Add a game to the rig <span class="planned-tag planned-tag--done">live</span></h2>
+      <p>Generates the JSON block to drop into <code>rig-config.json</code> under <code>games.&lt;name&gt;</code>. Fill in what you know; everything else has sensible defaults. After adding, the game gets verify + auto-monitor for free.</p>
+      <div class="addgame-form">
+        <div class="addgame-row">
+          <label>Game name</label>
+          <input type="text" id="addgame-name" placeholder="e.g. CS2">
+        </div>
+        <div class="addgame-row">
+          <label>Process exe(s) — comma-separated</label>
+          <input type="text" id="addgame-exe" placeholder="e.g. cs2, cs2.exe">
+        </div>
+        <div class="addgame-row">
+          <label>Graphics settings file path</label>
+          <input type="text" id="addgame-gfx" placeholder="e.g. %USERPROFILE%\Documents\MyGame\GameSettings.ini">
+        </div>
+        <div class="addgame-row">
+          <label>Settings format</label>
+          <select id="addgame-format">
+            <option value="ini">INI (most games)</option>
+            <option value="iracing-controls">iRacing controls.cfg</option>
+            <option value="kv">KV (Source / Apex)</option>
+          </select>
+        </div>
+        <div class="addgame-row">
+          <label>Auto-monitor on launch?</label>
+          <select id="addgame-monitor">
+            <option value="true">Yes — wraps session with HWiNFO + PresentMon</option>
+            <option value="false">No — just verify, no telemetry capture</option>
+          </select>
+        </div>
+        <button type="button" id="addgame-generate" class="wheel-calib-btn wheel-calib-btn--primary">Generate JSON</button>
+      </div>
+      <pre class="vjoy-code" id="addgame-output" hidden></pre>
     </div>
   </div>
 </section>
@@ -1696,6 +1771,6 @@ Write-Host "[report] generated: $LogDir\report.html" -ForegroundColor Cyan</pre>
 }
 </script>
 
-<script src="app.js?v=27"></script>
+<script src="app.js?v=29"></script>
 </body>
 </html>
