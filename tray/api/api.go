@@ -47,6 +47,7 @@ func (s *Server) Register(mux *http.ServeMux) {
 	mux.HandleFunc("/api/verify", s.handleVerify)  // /api/verify (all)
 	mux.HandleFunc("/api/verify/", s.handleVerify) // /api/verify/<game>[/baseline]
 	mux.HandleFunc("/api/games", s.handleGames)    // game-launch watcher state
+	mux.HandleFunc("/api/health/summary", s.handleHealthSummary) // compact for Stream Deck cells
 }
 
 type stateResp struct {
@@ -121,6 +122,68 @@ func (s *Server) handleAction(w http.ResponseWriter, r *http.Request) {
 	}
 	res := s.dispatcher.Run(req.Action, req.Params)
 	writeJSON(w, res)
+}
+
+// summaryResp — compact aggregated rig health, designed to be polled by a
+// Stream Deck "Web Requests" cell which renders different colours/glyphs
+// based on `status`.
+type summaryResp struct {
+	Status      string         `json:"status"` // "ok" | "warn" | "fail"
+	Health      map[string]int `json:"health"` // {ok:N, warn:N, fail:N}
+	Drift       summaryDrift   `json:"drift"`
+	ActiveGame  string         `json:"active_game,omitempty"`
+}
+
+type summaryDrift struct {
+	Total  int            `json:"total"`
+	ByGame map[string]int `json:"by_game,omitempty"`
+}
+
+func (s *Server) handleHealthSummary(w http.ResponseWriter, r *http.Request) {
+	resp := summaryResp{
+		Status: "ok",
+		Health: map[string]int{"ok": 0, "warn": 0, "fail": 0},
+		Drift:  summaryDrift{ByGame: map[string]int{}},
+	}
+
+	// Aggregate health-check counts
+	for _, c := range probe.AllChecks() {
+		switch c.Status {
+		case "ok":
+			resp.Health["ok"]++
+		case "warn":
+			resp.Health["warn"]++
+		case "fail":
+			resp.Health["fail"]++
+		}
+	}
+
+	// Aggregate drift counts across all games
+	for _, gres := range verify.All(s.cfg) {
+		if gres.DriftCount > 0 {
+			resp.Drift.Total += gres.DriftCount
+			resp.Drift.ByGame[gres.Target] = gres.DriftCount
+		}
+	}
+
+	// Active game (first running)
+	if s.watcher != nil {
+		for name, st := range s.watcher.States() {
+			if st.Running {
+				resp.ActiveGame = name
+				break
+			}
+		}
+	}
+
+	// Roll up overall status: fail wins, then warn, else ok
+	if resp.Health["fail"] > 0 {
+		resp.Status = "fail"
+	} else if resp.Health["warn"] > 0 || resp.Drift.Total > 0 {
+		resp.Status = "warn"
+	}
+
+	writeJSON(w, resp)
 }
 
 // handleGames returns the watcher's per-game state map: {running, last_launch,

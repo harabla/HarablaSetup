@@ -20,9 +20,12 @@ import (
 
 	"github.com/getlantern/systray"
 
+	"fmt"
+
 	"github.com/hkbla/streamdeck-config/tray/api"
 	"github.com/hkbla/streamdeck-config/tray/config"
 	"github.com/hkbla/streamdeck-config/tray/exec"
+	"github.com/hkbla/streamdeck-config/tray/notify"
 	"github.com/hkbla/streamdeck-config/tray/watch"
 )
 
@@ -53,6 +56,9 @@ func main() {
 	watcher := watch.New(cfg)
 	watcher.SetMonitorRunner(dispatcher)
 	watcher.Start(context.Background())
+
+	// Subscribe to watcher events for toast notifications
+	go forwardWatcherToasts(watcher)
 
 	srv := newServer(*addr, docs, cfg, watcher)
 
@@ -111,6 +117,61 @@ func newServer(addr, docs string, cfg *config.Config, watcher *watch.Watcher) *h
 }
 
 // resolveDocsDir picks the docs directory: explicit flag > sibling of binary > cwd.
+// forwardWatcherToasts subscribes to watcher events and fires desktop
+// notifications. On launch: brief "verifying…" toast, then a follow-up with
+// the verify result. On exit: silent (the report opens automatically).
+func forwardWatcherToasts(w *watch.Watcher) {
+	events := w.Subscribe()
+	for ev := range events {
+		switch ev.Kind {
+		case "launch":
+			notify.Notify(
+				fmt.Sprintf("🎮 %s launched", ev.Game),
+				"Auto-verify firing…",
+				notify.Info,
+			)
+			// Wait briefly for the watcher's async verify to complete, then
+			// summarise. 1.5s is enough for the in-memory diff.
+			go func(game string) {
+				time.Sleep(1500 * time.Millisecond)
+				st, ok := w.States()[game]
+				if !ok || st.LastVerify == nil {
+					return
+				}
+				v := st.LastVerify
+				if v.DriftCount == 0 && v.MissingFiles == 0 {
+					notify.Notify(
+						fmt.Sprintf("✓ %s verified", game),
+						fmt.Sprintf("%d settings match expected", v.OkCount),
+						notify.Info,
+					)
+				} else {
+					body := ""
+					if v.DriftCount > 0 {
+						body += fmt.Sprintf("%d drift", v.DriftCount)
+						if v.DriftCount != 1 {
+							body += "s"
+						}
+					}
+					if v.MissingFiles > 0 {
+						if body != "" {
+							body += " · "
+						}
+						body += fmt.Sprintf("%d file missing", v.MissingFiles)
+					}
+					notify.Notify(
+						fmt.Sprintf("⚠ %s drift detected", game),
+						body+" — open Verify in the rig page",
+						notify.Warn,
+					)
+				}
+			}(ev.Game)
+		case "exit":
+			// Silent — monitor script auto-opens the report.
+		}
+	}
+}
+
 func resolveDocsDir(flagVal string) string {
 	if flagVal != "" {
 		return flagVal

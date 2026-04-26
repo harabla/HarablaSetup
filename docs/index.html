@@ -1187,6 +1187,26 @@ Write-Host "[report] generated: $LogDir\report.html" -ForegroundColor Cyan</pre>
     </li>
 
     <li class="pcsetup-step">
+      <h2><span class="pcsetup-num"></span> Stream Deck health cell (drift surfacing)</h2>
+      <p class="pcsetup-hint">A single cell that polls the tray's <code>/api/health/summary</code> endpoint and renders different glyphs / colours based on overall rig health. Visible at a glance from the deck during a session — turns amber on drift, red on failed health checks.</p>
+      <ol class="pcsetup-substeps">
+        <li>Install the <strong>BarRaider — API Ninja / Web Requests</strong> plugin from the Stream Deck Marketplace (free).</li>
+        <li>Add a cell on your Home or iRacing profile, choose the <em>Web Requests</em> action.</li>
+        <li>Configure:
+          <ul>
+            <li><strong>URL</strong>: <code>http://127.0.0.1:8765/api/health/summary</code></li>
+            <li><strong>Method</strong>: GET</li>
+            <li><strong>Auto-refresh</strong>: 10 s</li>
+            <li><strong>Display field</strong>: <code>$.status</code> (returns "ok" / "warn" / "fail")</li>
+            <li><strong>Conditional images</strong> (if the plugin supports it): map status → colour. Otherwise just show the text.</li>
+          </ul>
+        </li>
+        <li>Test: open the docs Verify page, accept-as-baseline a drift, the deck cell should switch from "warn" → "ok" within 10 s.</li>
+      </ol>
+      <p class="pcsetup-hint">The endpoint also exposes <code>$.drift.total</code>, <code>$.drift.by_game.iRacing</code>, <code>$.health.fail</code>, and <code>$.active_game</code> — useful for additional cells if you want fine-grained surfacing.</p>
+    </li>
+
+    <li class="pcsetup-step">
       <h2><span class="pcsetup-num"></span> Stream Deck — iRacing profile additions</h2>
       <ul class="pcsetup-bullets">
         <li>Build the <strong>iRacing profile</strong> (see iRacing tab) — pit macros, launchers for iRacing/Crew Chief/SimHub/Trading Paints, OBS Clip, Home cell.</li>
