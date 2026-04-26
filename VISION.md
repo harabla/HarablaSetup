@@ -189,20 +189,53 @@ display state, current health-check results) refreshed every 10s while open.
 
 ### Deploy
 
-Run rarely but matters when needed. One PowerShell script (`setup.ps1`):
-- `winget` installs for ~5 mainstream apps (Discord, Spotify, Steam, OBS,
-  Process Lasso)
-- GitHub release downloads for ~7 tools (HidHide, Joystick Gremlin,
-  PresentMon, Crew Chief, iRFFB 2022, etc.)
-- Portable .exe extraction (SoundVolumeView, MultiMonitorTool)
-- Generate all .bat scripts (display toggles, audio scripts) from
-  `rig-config.json`
-- Copy `bundle/` configs into place (controls.cfg, fanatec-iracing.xml,
-  Stream Deck profiles, FanaLab exports)
-- Pause for ~5 vendor-bound installs (FanaLab, iRacing, Stream Deck app,
-  Trading Paints, Virtual Desktop) with on-screen instructions
+Two halves: **capture** the working rig once, **restore** it on any future PC.
 
-Followed by `health-check.ps1 -Html` to confirm everything green.
+**Capture (`bundle.ps1`)** — runs on the working PC after first-time setup.
+Writes everything portable into `bundle/`:
+- Stream Deck profiles — exports each as `.streamDeckProfile` (zip of the
+  profile folder under `%APPDATA%\Elgato\StreamDeck\ProfilesV2\`).
+- Stream Deck plugin list — folder names from `Plugins\` → `plugins.txt`.
+- Joystick Gremlin profile — XML from `%APPDATA%\Joystick Gremlin\` (or
+  Documents).
+- iRacing controls.cfg — copied to `bundle/iRacing/controls.cfg.expected`.
+- Display toggle .bat files — generated from `rig-config.json` displays
+  block (one per monitor + presets all-on / all-off / vr-race / work).
+- Audio control .bat files — generated from `rig-config.json` audio block
+  (Discord/Spotify/iRacing volume up/down via SoundVolumeView).
+
+The user runs it (`.\scripts\bundle.ps1`), reviews `git status`, commits.
+FanaLab profiles are exported manually (vendor format); they get dropped
+into `bundle/FanaLab/`.
+
+**Restore (`setup.ps1`)** — runs on a fresh PC. Inverse of capture:
+- `winget` installs for ~5 mainstream apps (Discord, Spotify, Steam, OBS,
+  Process Lasso).
+- GitHub release downloads for ~7 tools (HidHide, Joystick Gremlin,
+  PresentMon, Crew Chief, iRFFB 2022, etc.).
+- Portable .exe extraction (SoundVolumeView, MultiMonitorTool, HWiNFO).
+- Imports each `bundle/StreamDeck/*.streamDeckProfile` via the Stream Deck
+  app's import hook.
+- Drops `bundle/Gremlin/*.xml` into `%APPDATA%\Joystick Gremlin\`.
+- Drops `bundle/iRacing/controls.cfg.expected` to
+  `Documents\iRacing\controls.cfg`.
+- Drops `bundle/scripts/*.bat` into `C:\Tools\<tool>\`.
+- Pauses for ~5 vendor-bound installs (FanaLab, iRacing, Stream Deck app,
+  Trading Paints, Virtual Desktop) with on-screen instructions and a
+  "press enter when done" prompt.
+- Pauses for OAuth re-auth (Spotify, Discord plugins).
+- Runs `health-check.ps1 -Html` and opens the report.
+
+Target: **first PC = ~7 hours manual; capture once; every PC after = ~30
+minutes** (mostly download time + 5 vendor installer clicks + a few
+re-auths).
+
+What's NOT bundle-able (tradeoffs documented in `bundle/README.md`):
+- Plugin OAuth tokens — re-auth per PC.
+- Plugin local audio device bindings — per-PC device names.
+- Stream Deck plugin binaries — Marketplace handles install + updates.
+- FanaLab driver — vendor.
+- iRacing membership — account-bound.
 
 ## Architecture
 
@@ -218,7 +251,12 @@ streamdeck-config/
 │  ├─ config/             rig-config.json loader
 │  └─ watch/              [planned] game-launch watcher + auto-monitor trigger
 ├─ scripts/               PowerShell — health-check, monitor-iracing, generate-report
-├─ bundle/                canonical configs to deploy on a fresh PC
+├─ bundle/                captured-from-PC configs deployed on fresh PC
+│  ├─ StreamDeck/         exported .streamDeckProfile files + plugin list
+│  ├─ Gremlin/            fanatec-iracing.xml
+│  ├─ FanaLab/            vendor-format profile exports
+│  ├─ iRacing/            controls.cfg.expected
+│  └─ scripts/            generated .bat files (display + audio)
 ├─ profiles/              iRacing pit macros (.txt source-of-truth)
 ├─ data/                  [planned] sensitivity DB, expected-settings baselines
 ├─ rig-config.json        per-PC paths (gitignored, templated)
@@ -376,57 +414,64 @@ doesn't serve them is a candidate for cutting.
 ## Status
 
 **Built (works on Mac with mock data + Windows binaries cross-compiled):**
+
+*Reference / Tune / Verify / Diagnose surfaces:*
 - Static reference site (wheel + 6 Stream Deck profiles + FanaLab + macros)
-- Tray with 8 JSON endpoints (state, processes, displays, vjoy, health,
-  config, action POST, /VISION.md /README.md), mock-on-Mac probes,
-  whitelist-based action dispatcher
-- Docs page with live integration (badge, pre-flight, health cards, Status
-  tab, Overview live tile)
-- 6-tab nav restructured to the five-mode frame (Overview · Reference ·
-  Tune · Verify · Diagnose · Deploy)
-- rig-config.json loader with `%ENVVAR%` expansion + dev defaults on Mac
-- PowerShell scripts: health-check (real Windows probes), monitor-iracing
-  (full session capture), generate-report (HTML with Chart.js)
-- Mouse hardware tests in browser (polling rate, acceleration detection,
-  jitter visual, Windows accel registry snippet)
-- Scimitar mapping verification (press-each-button capture + diff against
-  PUBG keyboard JSON, persisted match state)
-- Display profile click-to-toggle with action whitelist + display-id
-  validation
-- iRFFB 2022 + VR stack documented in PC Setup
+- 6-tab nav: Overview · Reference · Tune · Verify · Diagnose · Deploy
+- Sensitivity converter (cm/360°), 14-game library, add-game JSON generator
+- Mouse hardware tests in browser (polling, accel detection, jitter, Windows accel snippet)
+- Scimitar mapping verification (press-each-button capture + persistence)
+- Keyboard chatter / NKRO test (chatter detection, peak-NKRO tracking)
+- Pre-game routine cards (per-game checklists, localStorage progress)
+- Settings drift cards with [Accept-as-baseline] (in-memory + disk persist)
+
+*Tray + scripts (the runtime):*
+- Tray with 9 JSON endpoints (state, processes, displays, vjoy, health,
+  health/summary, config, action POST, games, verify, /VISION.md, /README.md)
+- Mock-on-Mac probes, whitelist-based action dispatcher
+- rig-config.json loader (env expansion + dev defaults)
+- Game-launch watcher (2.5s poll, fires verify + auto-monitor on transition)
+- Toast notifications (gen2brain/beeep — cross-platform)
+- INI parser + registry reader + diff engine + verify package
+- Disk persistence for baseline updates
+
+*PowerShell scripts:*
+- health-check.ps1 (real Windows probes via registry + process queries)
+- monitor-iracing.ps1 (full session capture: HWiNFO + PresentMon + poller)
+- generate-report.ps1 (HTML report with Chart.js frametime chart)
+- bundle.ps1 (capture working PC's portable configs into bundle/)
+
+*Deploy scaffolding:*
+- bundle/ directory with README documenting structure + capture workflow
+- rig-config.example.json template
+
+*Build:*
 - Cross-compile: 9 MB Mac binary + 9.6 MB Windows .exe from same source
 
-**Next (vision-extending, in roughly this order):**
-1. **Settings drift detection (the meat of Verify-from-files)**:
-   - Generic INI parser (handles standard + Unreal flavour)
-   - Registry reader (Windows; mock on Mac)
-   - Per-game custom parsers (iRacing `controls.cfg`, CS2/Apex KV later)
-   - Diff engine: `(actual_parsed, expected_map) → drift_list`
-   - `/api/verify/<game>` returns drifts grouped by category
-   - `/api/verify/<game>/baseline` POST endpoint snapshots actual → expected
-   - Verify page UI: drift cards per game per category with `[Accept as
-     baseline]` button per row
-2. **Game-launch watcher in tray** (`tray/watch/`) — polls every 2-3s for
-   known game exes from `rig-config.json`. On transition off→on: fires
-   verify + auto-starts monitor. On on→off: stops monitor, generates
-   report.
-3. **Toast notifications** (Windows native via Go syscall) + **Stream Deck
-   health cell** via BarRaider Web Requests plugin polling
-   `/api/health/summary`.
-4. **Tune tab content**: cm/360° calculator + Wareya sensitivity DB import
-   + "add a game" wizard.
-5. **Real Windows probes** in `probe_windows.go` (PC-only): registry reads
-   for vJoy / HidHide, EnumDisplayDevices, perfcounter for live CPU.
-6. **`setup.ps1` installer** (winget + GitHub releases + portable downloads
-   + bundle/ deployment + interactive vendor-install pauses).
-7. **Generate `bundle/`** from docs JSON + canonical configs + .bat scripts
-   (so deployment is deterministic).
-8. **Keyboard chatter / NKRO test** + **wheel calibration check** widgets
-   on Verify (parallel to mouse + scimitar).
-9. **Pre-game routine cards** per game on Verify (ordered checklist
-   distinct from running-app pre-flight).
-10. **iRacing telemetry hook** (live FFB clipping in Status, via SimHub or
-    direct shared memory).
+**Next (in roughly this order):**
+
+*Reach for these on the PC (need real rig to validate):*
+1. **Run `bundle.ps1` once** on the working PC, commit `bundle/` outputs
+   (Stream Deck profiles, Gremlin XML, controls.cfg, generated .bat
+   files). Closes the capture half of Deploy.
+2. **`setup.ps1` installer** — the restore half. winget + GitHub releases
+   + portable downloads + import bundle into place + interactive vendor-
+   install pauses + final health-check + report. ~half day's work.
+3. **Real Windows probes** in `probe_windows.go` — replace mocks with
+   registry reads (vJoy / HidHide / mouse settings), `EnumDisplayDevices`,
+   PerfCounter for live CPU. ~2 hours when sitting at the PC.
+4. **Wheel calibration check** widget on Verify (live joy.cpl-style view —
+   needs Windows joystick API).
+
+*Polish that can ship on Mac:*
+5. **iRacing telemetry hook** (live FFB clipping in Status via SimHub
+   shared memory or iRSDK direct). ~3 hours.
+6. **Settings change log** in Tune tab — annotated history of intentional
+   tweaks with timestamps. ~1 hour.
+7. **ADS / scope sens converter** in Tune (FOV-corrected math for tactical
+   FPS, embedded vs link-out trade-off). ~2 hours.
+8. **Auto-discovery of paths** — probe Steam manifest + registry to
+   pre-populate `rig-config.json`. ~2 hours.
 
 **Out of scope:**
 - Stream Deck custom plugin (BarRaider Web Requests is enough)
