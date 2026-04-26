@@ -138,6 +138,7 @@ async function probeTray() {
     renderHealthCards();
     renderStatusPage();
     renderOverviewTile();
+    refreshVerifyDrifts();
   } catch (e) {
     if (live.connected) {
       live.connected = false;
@@ -146,8 +147,116 @@ async function probeTray() {
       renderHealthCards();
       renderStatusPage();
       renderOverviewTile();
+      refreshVerifyDrifts();
     }
   }
+}
+
+// Settings drift — fetched on every probe; renders into #verify-results.
+async function refreshVerifyDrifts() {
+  const root = $('#verify-results');
+  if (!root) return;
+  if (!live.connected) {
+    root.innerHTML = '<div class="verify-empty">Tray not connected — drift detection unavailable.</div>';
+    return;
+  }
+  try {
+    const r = await fetch('/api/verify', { cache: 'no-store' });
+    if (!r.ok) throw new Error('verify ' + r.status);
+    const results = await r.json();
+    renderVerifyResults(results);
+  } catch (e) {
+    root.innerHTML = `<div class="verify-empty">Verify endpoint failed: ${escapeHTML(String(e))}</div>`;
+  }
+}
+
+function renderVerifyResults(results) {
+  const root = $('#verify-results');
+  if (!root) return;
+  if (!results || !results.length) {
+    root.innerHTML = '<div class="verify-empty">No games configured with settings_files. Add some to rig-config.json.</div>';
+    return;
+  }
+  root.innerHTML = results.map(r => {
+    const totalDrifts = r.drift_count || 0;
+    const status = totalDrifts > 0 ? 'drift' : (r.missing_files > 0 ? 'warn' : 'ok');
+    return `
+    <div class="verify-target verify-target--${status}">
+      <div class="verify-target-head">
+        <h3>${escapeHTML(r.target)}</h3>
+        <span class="verify-target-summary">
+          ${totalDrifts > 0 ? `<span class="verify-count drift">${totalDrifts} drift${totalDrifts !== 1 ? 's' : ''}</span>` : ''}
+          ${r.ok_count ? `<span class="verify-count ok">${r.ok_count} ok</span>` : ''}
+          ${r.missing_files ? `<span class="verify-count warn">${r.missing_files} missing</span>` : ''}
+        </span>
+      </div>
+      ${(r.files || []).map(f => renderVerifyFile(r.target, f)).join('')}
+    </div>`;
+  }).join('');
+
+  // Wire accept-baseline buttons
+  root.querySelectorAll('.verify-baseline-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const game = btn.dataset.game;
+      const file = btn.dataset.file;
+      const key = btn.dataset.key;
+      const actual = btn.dataset.actual;
+      btn.disabled = true; btn.textContent = 'saving…';
+      const res = await fetch(`/api/verify/${encodeURIComponent(game)}/baseline`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file, key, actual }),
+      }).then(r => r.json()).catch(e => ({ status: 'error', detail: String(e) }));
+      if (res.status === 'ok') {
+        btn.textContent = '✓ accepted';
+        setTimeout(refreshVerifyDrifts, 400);
+      } else {
+        btn.textContent = '✗ ' + (res.detail || 'failed');
+        btn.disabled = false;
+      }
+    });
+  });
+}
+
+function renderVerifyFile(target, f) {
+  const fname = (f.path || '').split(/[\\\/]/).pop();
+  if (f.status === 'ok') {
+    return `<div class="verify-file ok">
+      <div class="verify-file-head"><span class="vf-cat">${escapeHTML(f.category)}</span><code>${escapeHTML(fname)}</code><span class="vf-ok">✓ all expected values match</span></div>
+    </div>`;
+  }
+  if (f.status === 'missing') {
+    return `<div class="verify-file warn">
+      <div class="verify-file-head"><span class="vf-cat">${escapeHTML(f.category)}</span><code>${escapeHTML(fname)}</code><span class="vf-warn">⚠ file not found at <code>${escapeHTML(f.path)}</code></span></div>
+    </div>`;
+  }
+  if (f.status === 'error') {
+    return `<div class="verify-file warn">
+      <div class="verify-file-head"><span class="vf-cat">${escapeHTML(f.category)}</span><code>${escapeHTML(fname)}</code><span class="vf-warn">⚠ ${escapeHTML(f.error || 'parse error')}</span></div>
+    </div>`;
+  }
+  // drift
+  const drifts = f.drifts || [];
+  return `<div class="verify-file drift">
+    <div class="verify-file-head"><span class="vf-cat">${escapeHTML(f.category)}</span><code>${escapeHTML(fname)}</code><span class="vf-drift">${drifts.length} drift${drifts.length !== 1 ? 's' : ''}</span></div>
+    <table class="verify-drift-table">
+      <thead><tr><th>Key</th><th>Expected</th><th>Actual</th><th></th></tr></thead>
+      <tbody>
+      ${drifts.map(d => `<tr>
+        <td><code>${escapeHTML(d.key)}</code></td>
+        <td><code class="d-expected">${escapeHTML(d.expected)}</code></td>
+        <td><code class="d-actual ${d.reason === 'missing_key' ? 'missing' : ''}">${d.reason === 'missing_key' ? '(missing)' : escapeHTML(d.actual)}</code></td>
+        <td>${d.reason === 'value_mismatch'
+          ? `<button class="wheel-calib-btn verify-baseline-btn"
+                data-game="${escapeAttr(target)}"
+                data-file="${escapeAttr(f.path)}"
+                data-key="${escapeAttr(d.key)}"
+                data-actual="${escapeAttr(d.actual)}">Accept as baseline</button>`
+          : ''}</td>
+      </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
 }
 
 function renderOverviewTile() {
@@ -298,6 +407,10 @@ window.addEventListener('DOMContentLoaded', () => {
     if (btn.id === 'action-refresh') {
       btn.disabled = true;
       await probeTray();
+      btn.disabled = false;
+    } else if (btn.id === 'verify-refresh') {
+      btn.disabled = true;
+      await refreshVerifyDrifts();
       btn.disabled = false;
     } else if (btn.id === 'action-health') {
       btn.disabled = true;

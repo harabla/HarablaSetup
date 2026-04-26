@@ -166,12 +166,19 @@ func (s *Server) handleVerifyBaseline(w http.ResponseWriter, r *http.Request, ga
 		writeJSON(w, map[string]string{"status": "error", "detail": err.Error()})
 		return
 	}
-	// Persistence to disk happens in a follow-up commit (write rig-config.json
-	// preserving structure). For now the change is in-memory and survives
-	// until tray restart.
+	// Persist to rig-config.json on disk. If we loaded from dev defaults
+	// (no real config file), Save() returns an error — surface it but the
+	// in-memory change still applied for this session.
+	if err := s.cfg.Save(); err != nil {
+		writeJSON(w, map[string]string{
+			"status": "ok",
+			"detail": "in-memory only — " + err.Error(),
+		})
+		return
+	}
 	writeJSON(w, map[string]string{
 		"status": "ok",
-		"detail": "baseline updated in memory; restart loses the change until disk persistence ships",
+		"detail": "baseline saved to " + s.cfg.LoadedFrom(),
 	})
 }
 

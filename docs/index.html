@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=15" />
+  <link rel="stylesheet" href="styles.css?v=16" />
   <script>
     // Stash the initial hash for app.js, then strip it so the browser does not
     // anchor-scroll the section heading under the sticky topbar on first load.
@@ -185,9 +185,12 @@
       <p>Tools installed, vJoy devices configured, processes running, iRacing controls.cfg present, logs writable. Renders live cards from the tray's <code>/api/health</code> when connected — see <a href="#status">Diagnose</a>.</p>
     </div>
 
-    <div class="planned-card">
-      <h2>Settings drift detection <span class="planned-tag">planned</span></h2>
-      <p>Read iRacing <code>app.ini</code>, PUBG <code>GameUserSettings.ini</code>, OpenXR Toolkit <code>settings.cfg</code> — diff against expected values declared in <code>rig-config.json</code> per game. Surface mismatches via toast + Stream Deck cell colour.</p>
+    <div class="planned-card planned-card--full">
+      <h2>Settings drift detection <span class="planned-tag planned-tag--done">live</span>
+        <button id="verify-refresh" class="wheel-calib-btn" style="margin-left:auto;">Re-verify now</button>
+      </h2>
+      <p>Reads each game's settings files (iRacing <code>app.ini</code> + <code>controls.cfg</code>, PUBG <code>GameUserSettings.ini</code>, etc.), diffs against expected values in <code>rig-config.json</code>. Click <strong>Accept as baseline</strong> to update expected when you've intentionally changed a setting.</p>
+      <div id="verify-results" class="verify-results"></div>
     </div>
 
     <div class="planned-card planned-card--full">
@@ -1666,6 +1669,6 @@ Write-Host "[report] generated: $LogDir\report.html" -ForegroundColor Cyan</pre>
 }
 </script>
 
-<script src="app.js?v=25"></script>
+<script src="app.js?v=26"></script>
 </body>
 </html>
