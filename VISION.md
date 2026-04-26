@@ -89,11 +89,58 @@ When adding a game or changing settings. Examples:
 
 ### Verify
 
-Two things, both automatic where possible:
+Three things, all automatic where possible:
 
-1. **Settings drift** — Read game config files (iRacing `app.ini`, PUBG
-   `GameUserSettings.ini`, OpenXR Toolkit `settings.cfg`) and diff against
-   expected values declared in `rig-config.json`. Flag mismatches.
+1. **Settings drift** — Read game / OS config files, parse, diff against
+   expected values. Covers **graphics, key bindings, mouse sens, and
+   OS-level mouse settings** — anything stored in plaintext or registry.
+
+   Per game, `rig-config.json` declares one or more `settings_files` entries,
+   each with a `category` (so drifts can be grouped by what they affect):
+
+   ```json
+   "iRacing": {
+     "settings_files": [
+       { "category": "graphics", "format": "ini",
+         "path": "%USERPROFILE%\\Documents\\iRacing\\app.ini",
+         "expected": { "Graphics.MultiSamples": 4 } },
+       { "category": "controls", "format": "iracing-controls",
+         "path": "%USERPROFILE%\\Documents\\iRacing\\controls.cfg",
+         "expected": { "Brake Bias increase": "vJoy_71" } }
+     ]
+   }
+   ```
+
+   Plus a `system` block for OS-level settings:
+
+   ```json
+   "system": {
+     "settings_files": [
+       { "category": "mouse", "format": "registry",
+         "path": "registry:HKCU\\Control Panel\\Mouse",
+         "expected": { "MouseSpeed": "0" } }   // EPP off
+     ]
+   }
+   ```
+
+   Realistic readability matrix:
+
+   | Source | Graphics | Binds | Mouse sens | Format | Notes |
+   |---|---|---|---|---|---|
+   | iRacing | `app.ini` ✓ | `controls.cfg` ✓ | n/a (wheel) | INI + custom | works today |
+   | PUBG | `GameUserSettings.ini` ✓ | `Input.ini` ✓ | `GameUserSettings.ini` ✓ | INI (Unreal) | works today |
+   | CS2 / Apex | ✓ | ✓ | ✓ | KV format | when added |
+   | Most Unreal games | ✓ | ✓ | ✓ | INI | when added |
+   | Windows mouse | n/a | n/a | `HKCU\Control Panel\Mouse` ✓ | registry | OS-level |
+   | iCUE Scimitar | n/a | proprietary binary | n/a | iCUE SDK | use press-each-button test instead |
+   | FanaLab profiles | n/a | partial | n/a | proprietary | future, separate concern |
+
+   **"Snapshot current as baseline" workflow** — you tweak settings on
+   purpose. The system shouldn't nag. Each drift in the Verify UI has an
+   `[Accept as new baseline]` button that writes the actual value back into
+   `rig-config.json`'s `expected` block. Expected = "what you decided was
+   right last time", not a frozen golden image.
+
 2. **Hardware behaviour** — Active tests for the input devices:
    - **Mouse**: in-browser polling-rate test (count `pointermove` events/sec),
      acceleration detection (drag-test for `Enhance Pointer Precision`),
@@ -106,6 +153,7 @@ Two things, both automatic where possible:
      PUBG keyboard JSON. Reveals iCUE profile mismatches without parsing
      iCUE files.
    - **Wheel**: joy.cpl-style live input view, calibration drift check.
+
 3. **Tool installs** — every path in `rig-config.json` resolves to a file
    that exists. vJoy devices configured per spec. HidHide whitelist correct.
 
@@ -236,18 +284,52 @@ truth for paths.
 
 ## Multi-game
 
-Each game is a JSON block in `rig-config.json`:
+Each game is a JSON block in `rig-config.json`. `settings_files` is an array
+of categorised entries — graphics, controls, mouse, etc. — so the same diff
+engine handles everything you want to verify:
 
 ```json
 "iRacing": {
   "exe": ["iRacingSim64DX11.exe", "iRacingUI.exe"],
   "ui_path": "...",
   "settings_files": [
-    { "path": "%USERPROFILE%\\Documents\\iRacing\\app.ini",
-      "expected": { "MultiSamples": 4, "MaxQuality": 1 } }
+    {
+      "category": "graphics", "format": "ini",
+      "path": "%USERPROFILE%\\Documents\\iRacing\\app.ini",
+      "expected": { "Graphics.MultiSamples": 4, "Graphics.MaxQuality": 1 }
+    },
+    {
+      "category": "controls", "format": "iracing-controls",
+      "path": "%USERPROFILE%\\Documents\\iRacing\\controls.cfg",
+      "expected": { "Brake Bias increase": "vJoy_71",
+                    "Throttle":            "Fanatec axis 1" }
+    }
   ],
   "monitoring": { "auto": true, "wrapper": "monitor-iracing.ps1" },
   "sensitivity": { "in_game": 0.55, "fov": 75, "type": "sim-racing" }
+},
+"PUBG": {
+  "exe": ["TslGame.exe"],
+  "settings_files": [
+    {
+      "category": "graphics", "format": "ini",
+      "path": "%LOCALAPPDATA%\\TslGame\\Saved\\Config\\WindowsNoEditor\\GameUserSettings.ini",
+      "expected": { "ScalabilityGroups.sg.TextureQuality": 3 }
+    },
+    {
+      "category": "controls", "format": "ini",
+      "path": "%LOCALAPPDATA%\\TslGame\\Saved\\Config\\WindowsNoEditor\\Input.ini",
+      "expected": { "ActionMappings.Crouch": "C" }
+    },
+    {
+      "category": "mouse", "format": "ini",
+      "path": "%LOCALAPPDATA%\\TslGame\\Saved\\Config\\WindowsNoEditor\\GameUserSettings.ini",
+      "expected": { "AimSensitivity": 32, "ScopeSensitivity": 20 }
+    }
+  ],
+  "monitoring": { "auto": true, "wrapper": "monitor-pubg.ps1" },
+  "sensitivity": { "dpi": 800, "in_game_hipfire": 32, "in_game_scope": 20,
+                   "type": "fps-tac" }
 }
 ```
 
@@ -266,48 +348,85 @@ You can:
    to live status. Pre-flight pills are accurate. Health all green.
 2. Open the page on a phone before a race, scan the wheel layout for a
    binding you've forgotten.
-3. Launch iRacing. Tray detects it, fires verify, toast says "all settings
-   match expected". Stream Deck health cell stays green. Monitoring starts
-   silently in the background.
+3. Launch iRacing. Tray detects it, reads `app.ini` + `controls.cfg`, diffs
+   against expected. Toast says "all settings match expected" — graphics,
+   binds, FFB strength, everything. Stream Deck health cell stays green.
+   Monitoring starts silently in the background.
 4. Race in VR using MPS context modes for ENC-L without thinking about it.
 5. Hit a stutter. After the race, open `report.html`. See exactly which
    process spiked when, what your graphics settings were.
-6. Notice the mouse feels off. Open Verify tab → Mouse health. Tests show
-   polling rate is 125Hz instead of 1000Hz. Fix → re-test → green.
-7. Add a new shooter. Tune tab calculates suggested sens from your PUBG
-   baseline. Drop a JSON block in rig-config. New game gets monitoring +
-   verification automatically.
-8. Reinstall Windows. Clone repo, run `setup.ps1`, restore `bundle/`.
+6. Notice the mouse feels off. Open Verify tab. Two layers help:
+   - **Hardware tests**: polling rate widget shows 125Hz instead of 1000Hz
+     → check driver / Windows polling rate setting → re-test → green.
+   - **Settings drift**: PUBG `AimSensitivity` actual is 28, expected was 32.
+     Either accept new value as baseline (intentional change) or restore.
+7. After a long session your iRacing FFB strength was tweaked. Open Verify,
+   see "FFB drift" entry → click [Accept as baseline] → expected gets
+   updated; no nag next session.
+8. Add a new shooter. Tune tab calculates suggested sens from your PUBG
+   baseline. Drop a JSON block in rig-config with paths + expected. New
+   game gets verify + monitoring + sensitivity recommendations
+   automatically.
+9. Reinstall Windows. Clone repo, run `setup.ps1`, restore `bundle/`.
    Racing again within an hour with the same rig.
 
-If those eight flows feel friction-free, the system works. Anything that
+If those nine flows feel friction-free, the system works. Anything that
 doesn't serve them is a candidate for cutting.
 
 ## Status
 
 **Built (works on Mac with mock data + Windows binaries cross-compiled):**
 - Static reference site (wheel + 6 Stream Deck profiles + FanaLab + macros)
-- Tray with 7 JSON endpoints, mock-on-Mac probes, action whitelist
-- Docs page with live integration (badge, pre-flight, health cards, Status tab)
-- rig-config.json loader with `%ENVVAR%` expansion + dev defaults
+- Tray with 8 JSON endpoints (state, processes, displays, vjoy, health,
+  config, action POST, /VISION.md /README.md), mock-on-Mac probes,
+  whitelist-based action dispatcher
+- Docs page with live integration (badge, pre-flight, health cards, Status
+  tab, Overview live tile)
+- 6-tab nav restructured to the five-mode frame (Overview · Reference ·
+  Tune · Verify · Diagnose · Deploy)
+- rig-config.json loader with `%ENVVAR%` expansion + dev defaults on Mac
 - PowerShell scripts: health-check (real Windows probes), monitor-iracing
   (full session capture), generate-report (HTML with Chart.js)
+- Mouse hardware tests in browser (polling rate, acceleration detection,
+  jitter visual, Windows accel registry snippet)
+- Scimitar mapping verification (press-each-button capture + diff against
+  PUBG keyboard JSON, persisted match state)
+- Display profile click-to-toggle with action whitelist + display-id
+  validation
 - iRFFB 2022 + VR stack documented in PC Setup
 - Cross-compile: 9 MB Mac binary + 9.6 MB Windows .exe from same source
 
 **Next (vision-extending, in roughly this order):**
-1. Restructure docs nav to the 5-mode cut (Reference/Tune/Verify/Diagnose/Deploy)
-2. Game-launch watcher in tray (`tray/watch/`) — fires verify + auto-starts
-   monitor when known game process appears
-3. Settings drift detection — read game files, diff vs expected, populate
-   `expected` block per game in `rig-config.json`
-4. Mouse hardware tests in browser (polling, accel detection, jitter visual)
-5. Scimitar mapping verification (press-each-button capture)
-6. Tune tab with cm/360° calculator + Wareya sensitivity DB import
-7. Toast notifications (Windows native) + Stream Deck health cell via
-   BarRaider Web Requests
-8. Real Windows probes in `probe_windows.go` (PC-only)
-9. `setup.ps1` installer (winget + GitHub releases + portable downloads)
+1. **Settings drift detection (the meat of Verify-from-files)**:
+   - Generic INI parser (handles standard + Unreal flavour)
+   - Registry reader (Windows; mock on Mac)
+   - Per-game custom parsers (iRacing `controls.cfg`, CS2/Apex KV later)
+   - Diff engine: `(actual_parsed, expected_map) → drift_list`
+   - `/api/verify/<game>` returns drifts grouped by category
+   - `/api/verify/<game>/baseline` POST endpoint snapshots actual → expected
+   - Verify page UI: drift cards per game per category with `[Accept as
+     baseline]` button per row
+2. **Game-launch watcher in tray** (`tray/watch/`) — polls every 2-3s for
+   known game exes from `rig-config.json`. On transition off→on: fires
+   verify + auto-starts monitor. On on→off: stops monitor, generates
+   report.
+3. **Toast notifications** (Windows native via Go syscall) + **Stream Deck
+   health cell** via BarRaider Web Requests plugin polling
+   `/api/health/summary`.
+4. **Tune tab content**: cm/360° calculator + Wareya sensitivity DB import
+   + "add a game" wizard.
+5. **Real Windows probes** in `probe_windows.go` (PC-only): registry reads
+   for vJoy / HidHide, EnumDisplayDevices, perfcounter for live CPU.
+6. **`setup.ps1` installer** (winget + GitHub releases + portable downloads
+   + bundle/ deployment + interactive vendor-install pauses).
+7. **Generate `bundle/`** from docs JSON + canonical configs + .bat scripts
+   (so deployment is deterministic).
+8. **Keyboard chatter / NKRO test** + **wheel calibration check** widgets
+   on Verify (parallel to mouse + scimitar).
+9. **Pre-game routine cards** per game on Verify (ordered checklist
+   distinct from running-app pre-flight).
+10. **iRacing telemetry hook** (live FFB clipping in Status, via SimHub or
+    direct shared memory).
 
 **Out of scope:**
 - Stream Deck custom plugin (BarRaider Web Requests is enough)
@@ -315,3 +434,4 @@ doesn't serve them is a candidate for cutting.
 - Multi-user / cloud sync / sharing
 - Game guides / drop locations / strategic content beyond your own settings
 - Content creation tooling beyond triggering OBS
+- iCUE binary profile parsing (use press-each-button verification instead)
