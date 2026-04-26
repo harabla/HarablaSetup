@@ -15,12 +15,63 @@
       "ui":        "C:\\Program Files (x86)\\iRacing\\iRacingUI.exe",
       "sim":       "C:\\Program Files (x86)\\iRacing\\iRacingSim64DX11.exe",
       "documents": "%USERPROFILE%\\Documents\\iRacing",
-      "settings":  ["app.ini", "rendererDX11.ini", "dxconfig.ini"]
+      "settings_files": [
+        {
+          "category": "graphics",
+          "format":   "ini",
+          "path":     "%USERPROFILE%\\Documents\\iRacing\\app.ini",
+          "expected": {
+            "Graphics.MultiSamples": "4",
+            "Graphics.MaxQuality":   "1"
+          }
+        },
+        {
+          "category": "controls",
+          "format":   "iracing-controls",
+          "path":     "%USERPROFILE%\\Documents\\iRacing\\controls.cfg",
+          "expected": {
+            "Controls.Brake Bias increase": "vJoy_71",
+            "Controls.Throttle":            "Fanatec axis 1"
+          }
+        }
+      ]
     },
     "PUBG": {
-      "exe":      "C:\\Program Files (x86)\\Steam\\steamapps\\common\\PUBG\\TslGame.exe",
-      "settings": ["%LOCALAPPDATA%\\TslGame\\Saved\\Config\\WindowsNoEditor\\GameUserSettings.ini"]
+      "exe": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\PUBG\\TslGame.exe",
+      "settings_files": [
+        {
+          "category": "graphics",
+          "format":   "ini",
+          "path":     "%LOCALAPPDATA%\\TslGame\\Saved\\Config\\WindowsNoEditor\\GameUserSettings.ini",
+          "expected": {
+            "ScalabilityGroups.sg.TextureQuality":      "3",
+            "ScalabilityGroups.sg.AntiAliasingQuality": "2"
+          }
+        },
+        {
+          "category": "mouse",
+          "format":   "ini",
+          "path":     "%LOCALAPPDATA%\\TslGame\\Saved\\Config\\WindowsNoEditor\\GameUserSettings.ini",
+          "expected": {
+            "/Script/TslGame.TslGameUserSettings.AimSensitivity":   "32.000000",
+            "/Script/TslGame.TslGameUserSettings.ScopeSensitivity": "20.000000"
+          }
+        }
+      ]
     }
+  },
+
+  "system": {
+    "settings_files": [
+      {
+        "category": "mouse",
+        "format":   "registry",
+        "path":     "registry:HKCU\\Control Panel\\Mouse",
+        "expected": {
+          "Mouse.MouseSpeed": "0"
+        }
+      }
+    ]
   },
 
   "vr": {

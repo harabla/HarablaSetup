@@ -10,9 +10,12 @@ import (
 	"net/http"
 	"runtime"
 
+	"strings"
+
 	"github.com/hkbla/streamdeck-config/tray/config"
 	"github.com/hkbla/streamdeck-config/tray/exec"
 	"github.com/hkbla/streamdeck-config/tray/probe"
+	"github.com/hkbla/streamdeck-config/tray/verify"
 )
 
 // Server holds the dependencies for handlers — config + action dispatcher.
@@ -34,6 +37,8 @@ func (s *Server) Register(mux *http.ServeMux) {
 	mux.HandleFunc("/api/health", s.handleHealth)
 	mux.HandleFunc("/api/config", s.handleConfig)
 	mux.HandleFunc("/api/action", s.handleAction)
+	mux.HandleFunc("/api/verify", s.handleVerify)  // /api/verify (all)
+	mux.HandleFunc("/api/verify/", s.handleVerify) // /api/verify/<game>[/baseline]
 }
 
 type stateResp struct {
@@ -108,6 +113,66 @@ func (s *Server) handleAction(w http.ResponseWriter, r *http.Request) {
 	}
 	res := s.dispatcher.Run(req.Action, req.Params)
 	writeJSON(w, res)
+}
+
+// handleVerify routes:
+//
+//   GET  /api/verify                       — every game + system
+//   GET  /api/verify/<game>                — one game (or "system")
+//   POST /api/verify/<game>/baseline       — accept current actual as expected
+//                                              body: {file, key, actual}
+func (s *Server) handleVerify(w http.ResponseWriter, r *http.Request) {
+	parts := strings.Split(strings.Trim(strings.TrimPrefix(r.URL.Path, "/api/verify"), "/"), "/")
+	// parts[0] may be empty (the "every game" case)
+
+	// POST .../baseline
+	if r.Method == http.MethodPost && len(parts) >= 2 && parts[1] == "baseline" {
+		s.handleVerifyBaseline(w, r, parts[0])
+		return
+	}
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if len(parts) == 0 || parts[0] == "" {
+		writeJSON(w, verify.All(s.cfg))
+		return
+	}
+	target := parts[0]
+	if target == "system" {
+		writeJSON(w, verify.System(s.cfg))
+		return
+	}
+	writeJSON(w, verify.Game(s.cfg, target))
+}
+
+type baselineReq struct {
+	File   string `json:"file"`
+	Key    string `json:"key"`
+	Actual string `json:"actual"`
+}
+
+func (s *Server) handleVerifyBaseline(w http.ResponseWriter, r *http.Request, game string) {
+	var req baselineReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "bad json: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	if req.File == "" || req.Key == "" {
+		http.Error(w, "file and key required", http.StatusBadRequest)
+		return
+	}
+	if err := verify.SnapshotBaseline(s.cfg, game, req.File, req.Key, req.Actual); err != nil {
+		writeJSON(w, map[string]string{"status": "error", "detail": err.Error()})
+		return
+	}
+	// Persistence to disk happens in a follow-up commit (write rig-config.json
+	// preserving structure). For now the change is in-memory and survives
+	// until tray restart.
+	writeJSON(w, map[string]string{
+		"status": "ok",
+		"detail": "baseline updated in memory; restart loses the change until disk persistence ships",
+	})
 }
 
 func writeJSON(w http.ResponseWriter, v interface{}) {

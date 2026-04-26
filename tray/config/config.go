@@ -24,6 +24,7 @@ import (
 type Config struct {
 	Tools    map[string]string  `json:"tools"`
 	Games    map[string]GameDef `json:"games"`
+	System   SystemDef          `json:"system,omitempty"`
 	VR       VRConfig           `json:"vr"`
 	Displays map[string]string  `json:"displays"`
 	Logs     string             `json:"logs"`
@@ -35,11 +36,27 @@ type Config struct {
 }
 
 type GameDef struct {
-	UI         string   `json:"ui,omitempty"`
-	Sim        string   `json:"sim,omitempty"`
-	Exe        string   `json:"exe,omitempty"`
-	Documents  string   `json:"documents,omitempty"`
-	Settings   []string `json:"settings,omitempty"`
+	UI            string         `json:"ui,omitempty"`
+	Sim           string         `json:"sim,omitempty"`
+	Exe           interface{}    `json:"exe,omitempty"` // string OR []string accepted
+	Documents     string         `json:"documents,omitempty"`
+	Settings      []string       `json:"settings,omitempty"`        // legacy: bare filenames under Documents
+	SettingsFiles []SettingsFile `json:"settings_files,omitempty"`  // new: categorised + parseable
+}
+
+// SettingsFile describes one parseable source (file path or registry key)
+// belonging to a game or to the system block. Read by the verify layer.
+type SettingsFile struct {
+	Category string            `json:"category"` // graphics | controls | mouse | system | audio
+	Path     string            `json:"path"`
+	Format   string            `json:"format"`   // ini | iracing-controls | registry | kv
+	Expected map[string]string `json:"expected,omitempty"`
+}
+
+// SystemDef holds OS-level settings_files (Windows registry mouse settings, etc.)
+// — used for things that aren't owned by any one game.
+type SystemDef struct {
+	SettingsFiles []SettingsFile `json:"settings_files,omitempty"`
 }
 
 type VRConfig struct {
@@ -103,12 +120,19 @@ func (c *Config) expand() {
 	for k, g := range c.Games {
 		g.UI = os.ExpandEnv(g.UI)
 		g.Sim = os.ExpandEnv(g.Sim)
-		g.Exe = os.ExpandEnv(g.Exe)
+		// Exe is interface{} (string or []string) — leave as-is; the watcher
+		// normalises when reading.
 		g.Documents = os.ExpandEnv(g.Documents)
 		for i, s := range g.Settings {
 			g.Settings[i] = os.ExpandEnv(s)
 		}
+		for i := range g.SettingsFiles {
+			g.SettingsFiles[i].Path = os.ExpandEnv(g.SettingsFiles[i].Path)
+		}
 		c.Games[k] = g
+	}
+	for i := range c.System.SettingsFiles {
+		c.System.SettingsFiles[i].Path = os.ExpandEnv(c.System.SettingsFiles[i].Path)
 	}
 	c.VR.OpenXRToolkit = os.ExpandEnv(c.VR.OpenXRToolkit)
 	c.VR.VirtualDesktop = os.ExpandEnv(c.VR.VirtualDesktop)
@@ -133,10 +157,51 @@ func devDefaults() *Config {
 				Sim:       `C:\Program Files (x86)\iRacing\iRacingSim64DX11.exe`,
 				Documents: `%USERPROFILE%\Documents\iRacing`,
 				Settings:  []string{"app.ini", "rendererDX11.ini", "dxconfig.ini"},
+				// Dev mode points at the test fixtures so verify works on Mac
+				SettingsFiles: []SettingsFile{
+					{
+						Category: "graphics", Format: "ini",
+						Path: "tray/parse/testdata/iracing-app.ini",
+						Expected: map[string]string{
+							"Graphics.MultiSamples":  "4",
+							"Graphics.MaxQuality":    "1",
+							"Graphics.MirrorHigh":    "1",
+							"Graphics.TextureQuality": "2",
+						},
+					},
+					{
+						Category: "controls", Format: "iracing-controls",
+						Path: "tray/parse/testdata/iracing-controls.cfg",
+						Expected: map[string]string{
+							"Controls.Brake Bias increase": "vJoy_71",
+							"Controls.Brake Bias decrease": "vJoy_72",
+							"Controls.Black Box click":     "vJoy_56",
+						},
+					},
+				},
 			},
 			"PUBG": {
 				Exe:      `C:\Program Files (x86)\Steam\steamapps\common\PUBG\TslGame.exe`,
 				Settings: []string{`%LOCALAPPDATA%\TslGame\Saved\Config\WindowsNoEditor\GameUserSettings.ini`},
+				SettingsFiles: []SettingsFile{
+					{
+						Category: "graphics", Format: "ini",
+						Path: "tray/parse/testdata/pubg-gameusersettings.ini",
+						Expected: map[string]string{
+							"ScalabilityGroups.sg.TextureQuality":      "3",
+							"ScalabilityGroups.sg.AntiAliasingQuality": "2",
+							"ScalabilityGroups.sg.ResolutionQuality":   "100.000000",
+						},
+					},
+					{
+						Category: "mouse", Format: "ini",
+						Path: "tray/parse/testdata/pubg-gameusersettings.ini",
+						Expected: map[string]string{
+							"/Script/TslGame.TslGameUserSettings.AimSensitivity":    "32.000000",
+							"/Script/TslGame.TslGameUserSettings.ScopeSensitivity": "20.000000",
+						},
+					},
+				},
 			},
 		},
 		VR: VRConfig{
