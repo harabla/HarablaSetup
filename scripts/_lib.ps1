@@ -12,7 +12,7 @@ function Get-RigConfig {
     }
     $raw = Get-Content $Path -Raw
     # Strip JSON comment fields ("_comment": ...) which our example has but
-    # JSON parsers don't accept — quick regex strip before parsing.
+    # JSON parsers don't accept -- quick regex strip before parsing.
     $cleaned = $raw -replace '(?m)^\s*"_comment".*$', ''
     $cleaned = $cleaned -replace ',(\s*})', '$1'
     return $cleaned | ConvertFrom-Json

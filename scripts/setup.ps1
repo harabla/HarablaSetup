@@ -1,18 +1,18 @@
-# setup.ps1 — install + restore the rig on a fresh PC.
+# setup.ps1 -- install + restore the rig on a fresh PC.
 #
 # Idempotent: re-run safely if interrupted. Each phase checks "is this
 # already done?" before doing work. Logs to C:\Logs\setup\<timestamp>.log.
 #
 # Phases (run in order, can skip individually):
-#   1. preflight       — admin check, PS version, internet
-#   2. winget          — mainstream apps via Windows Package Manager
-#   3. github          — installer downloads from GitHub releases
-#   4. portable        — NirSoft tools + similar (download + extract)
-#   5. vendor          — open browser tabs for sites with no automation,
+#   1. preflight       -- admin check, PS version, internet
+#   2. winget          -- mainstream apps via Windows Package Manager
+#   3. github          -- installer downloads from GitHub releases
+#   4. portable        -- NirSoft tools + similar (download + extract)
+#   5. vendor          -- open browser tabs for sites with no automation,
 #                        wait for user to confirm install
-#   6. restore         — drop bundle/ files into their target locations
-#   7. rigconfig       — create rig-config.json from example if missing
-#   8. healthcheck     — run scripts/health-check.ps1 -Html, open report
+#   6. restore         -- drop bundle/ files into their target locations
+#   7. rigconfig       -- create rig-config.json from example if missing
+#   8. healthcheck     -- run scripts/health-check.ps1 -Html, open report
 #
 # Usage:
 #   .\scripts\setup.ps1                          # all phases
@@ -61,7 +61,7 @@ function Phase-Preflight {
     # Admin?
     $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]'Administrator')
     if ($isAdmin) { Log "running as Administrator" 'OK' }
-    else { Log "NOT running as Administrator — some installs (HidHide, vJoy, drivers) will fail. Re-launch PowerShell as admin if needed." 'WARN' }
+    else { Log "NOT running as Administrator -- some installs (HidHide, vJoy, drivers) will fail. Re-launch PowerShell as admin if needed." 'WARN' }
 
     # PowerShell 5.1+ is required (Windows 10/11 ships with this; PS 7 also works)
     $psv = $PSVersionTable.PSVersion
@@ -74,7 +74,7 @@ function Phase-Preflight {
             $null = Invoke-WebRequest -Uri 'https://api.github.com' -UseBasicParsing -TimeoutSec 5
             Log "internet reachable" 'OK'
         } catch {
-            Log "internet NOT reachable — most phases will fail" 'FAIL'
+            Log "internet NOT reachable -- most phases will fail" 'FAIL'
             throw 'aborting'
         }
     }
@@ -82,7 +82,7 @@ function Phase-Preflight {
     # winget
     $winget = Get-Command winget -ErrorAction SilentlyContinue
     if ($winget) { Log "winget found: $($winget.Source)" 'OK' }
-    else { Log "winget not installed — install 'App Installer' from Microsoft Store, then re-run" 'FAIL'; throw 'aborting' }
+    else { Log "winget not installed -- install 'App Installer' from Microsoft Store, then re-run" 'FAIL'; throw 'aborting' }
 
     # Repo root sanity
     if (-not (Test-Path "$repoRoot\docs\index.html")) {
@@ -108,7 +108,7 @@ function Install-Winget {
     elseif ($output -match 'already installed' -or $output -match 'No newer version available') {
         Log "$Friendly already installed" 'OK'
     } else {
-        Log "$Friendly failed — exit $LASTEXITCODE. Try manually: winget install --id $Id" 'WARN'
+        Log "$Friendly failed -- exit $LASTEXITCODE. Try manually: winget install --id $Id" 'WARN'
     }
 }
 
@@ -146,13 +146,21 @@ function Install-GitHubRelease {
     $asset = Get-GitHubAsset -Repo $Repo -Pattern $Pattern
     if (-not $asset) { return }
     $tmp = Join-Path $env:TEMP $asset.Name
-    if ($DryRun) { Log "(dry run) would download $($asset.Url) → $tmp"; return }
+    if ($DryRun) { Log "(dry run) would download $($asset.Url) -> $tmp"; return }
     Log "downloading $Friendly $($asset.Tag)..."
     try {
         Invoke-WebRequest -Uri $asset.Url -OutFile $tmp -UseBasicParsing -ErrorAction Stop
-        Log "running installer ($RunArgs)..."
-        Start-Process -FilePath $tmp -ArgumentList $RunArgs -Wait
-        Log "$Friendly installed" 'OK'
+        if ($tmp -match '\.zip$') {
+            $dest = Join-Path $toolsDir ($Friendly -replace '\s+', '')
+            New-Item -ItemType Directory -Force -Path $dest | Out-Null
+            Expand-Archive -Path $tmp -DestinationPath $dest -Force
+            Remove-Item $tmp
+            Log "$Friendly extracted to $dest" 'OK'
+        } else {
+            Log "running installer ($RunArgs)..."
+            Start-Process -FilePath $tmp -ArgumentList $RunArgs -Wait
+            Log "$Friendly installed" 'OK'
+        }
     } catch {
         Log "$Friendly install failed: $_" 'WARN'
     }
@@ -160,11 +168,11 @@ function Install-GitHubRelease {
 
 function Phase-GitHubReleases {
     Section 'GITHUB RELEASE INSTALLERS'
-    Install-GitHubRelease -Repo 'nefarius/HidHide'       -Pattern '\.exe$' -Friendly 'HidHide'         -RunArgs '/quiet'
-    Install-GitHubRelease -Repo 'WhiteMagic/JoystickGremlin' -Pattern '\.msi$' -Friendly 'Joystick Gremlin' -RunArgs '/quiet'
-    Install-GitHubRelease -Repo 'mrbelowski/CrewChiefV4' -Pattern 'CrewChief.*setup.*\.exe$' -Friendly 'Crew Chief' -RunArgs '/S'
-    Install-GitHubRelease -Repo 'blarghedy/iRFFB2022'    -Pattern '\.exe$' -Friendly 'iRFFB 2022'      -RunArgs '/S'
-    # PresentMon is a portable zip — handled in Phase-Portable
+    Install-GitHubRelease -Repo 'nefarius/HidHide'            -Pattern '\.exe$'  -Friendly 'HidHide'           -RunArgs '/quiet'
+    Install-GitHubRelease -Repo 'WhiteMagic/JoystickGremlin' -Pattern '\.zip$'  -Friendly 'Joystick Gremlin' -RunArgs ''
+    Install-GitHubRelease -Repo 'thogue95/irFFB'             -Pattern '\.zip$'  -Friendly 'iRFFB 2022'       -RunArgs ''
+    # Crew Chief -- moved to vendor phase (releases on thecrewchief.org, not GitHub)
+    # PresentMon is a portable zip -- handled in Phase-Portable
 }
 
 # ----------------------------------------------------------------- 4. PORTABLE
@@ -175,7 +183,7 @@ function Install-Portable {
         Log "$Friendly already at $target" 'OK'
         return
     }
-    if ($DryRun) { Log "(dry run) would download $Url → $target"; return }
+    if ($DryRun) { Log "(dry run) would download $Url -> $target"; return }
     New-Item -ItemType Directory -Force -Path $toolsDir | Out-Null
     $tmp = Join-Path $env:TEMP "$Name.zip"
     try {
@@ -196,14 +204,14 @@ function Phase-Portable {
                      -Name 'SoundVolumeView' -Friendly 'SoundVolumeView'
     Install-Portable -Url 'https://www.nirsoft.net/utils/multimonitortool-x64.zip' `
                      -Name 'MultiMonitorTool' -Friendly 'MultiMonitorTool'
-    # PresentMon — pinned version (NirSoft pattern; GitHub asset URL for stability)
+    # PresentMon -- pinned version (NirSoft pattern; GitHub asset URL for stability)
     $presentMon = Get-GitHubAsset -Repo 'GameTechDev/PresentMon' -Pattern 'x64\.exe$'
     if ($presentMon) {
         $target = Join-Path $toolsDir 'PresentMon'
         if (Test-Path (Join-Path $target $presentMon.Name)) {
             Log "PresentMon already at $target" 'OK'
         } elseif ($DryRun) {
-            Log "(dry run) would download PresentMon → $target"
+            Log "(dry run) would download PresentMon -> $target"
         } else {
             New-Item -ItemType Directory -Force -Path $target | Out-Null
             try {
@@ -222,6 +230,7 @@ function Phase-Vendor {
     Section 'VENDOR INSTALLS (manual)'
     Log "These installs need vendor sites or accounts. We'll open each in your browser."
     $vendors = @(
+        @{ Url = 'https://thecrewchief.org';                                    Name = 'Crew Chief V4' }
         @{ Url = 'https://fanatec.com/eu-en/support/downloads';                Name = 'Fanatec driver + FanaLab' }
         @{ Url = 'https://www.iracing.com/membership/';                         Name = 'iRacing membership + client' }
         @{ Url = 'https://tradingpaints.com';                                   Name = 'Trading Paints' }
@@ -230,7 +239,7 @@ function Phase-Vendor {
         @{ Url = 'https://steelseries.com/gg';                                  Name = 'SteelSeries GG' }
     )
     foreach ($v in $vendors) {
-        Log "opening: $($v.Name) → $($v.Url)"
+        Log "opening: $($v.Name) -> $($v.Url)"
         if (-not $DryRun) { Start-Process $v.Url }
         Pause-EnterToContinue "Install $($v.Name), then press Enter..."
     }
@@ -241,13 +250,13 @@ function Phase-Vendor {
 function Phase-Restore {
     Section 'RESTORE FROM BUNDLE'
     if (-not (Test-Path $bundleDir)) {
-        Log "no bundle/ directory — skipping (run scripts/bundle.ps1 on the source PC first)" 'WARN'
+        Log "no bundle/ directory -- skipping (run scripts/bundle.ps1 on the source PC first)" 'WARN'
         return
     }
 
-    # Stream Deck profiles — drop into ProfilesV2/. The Stream Deck app
+    # Stream Deck profiles -- drop into ProfilesV2/. The Stream Deck app
     # picks them up on next start. NOTE: this is a copy, not an "import"
-    # via the app's GUI — works because .streamDeckProfile is a zip of a
+    # via the app's GUI -- works because .streamDeckProfile is a zip of a
     # profile folder.
     $sdProfilesDir = Join-Path $env:APPDATA 'Elgato\StreamDeck\ProfilesV2'
     if (Test-Path "$bundleDir\StreamDeck") {
@@ -262,18 +271,18 @@ function Phase-Restore {
         }
     }
 
-    # Joystick Gremlin XML — copy to AppData
+    # Joystick Gremlin XML -- copy to AppData
     $gremlinDir = Join-Path $env:APPDATA 'Joystick Gremlin'
     if (Test-Path "$bundleDir\Gremlin") {
         New-Item -ItemType Directory -Force -Path $gremlinDir | Out-Null
         Get-ChildItem "$bundleDir\Gremlin" -Filter '*.xml' | ForEach-Object {
             $dest = Join-Path $gremlinDir $_.Name
-            if ($DryRun) { Log "(dry run) would copy $($_.Name) → $dest" }
+            if ($DryRun) { Log "(dry run) would copy $($_.Name) -> $dest" }
             else { Copy-Item $_.FullName $dest -Force; Log "Gremlin profile $($_.Name) installed" 'OK' }
         }
     }
 
-    # iRacing controls.cfg — only if iRacing has been launched once (creates the dir)
+    # iRacing controls.cfg -- only if iRacing has been launched once (creates the dir)
     $iracingDocs = Join-Path $env:USERPROFILE 'Documents\iRacing'
     if (Test-Path "$bundleDir\iRacing\controls.cfg.expected") {
         if (Test-Path $iracingDocs) {
@@ -281,16 +290,16 @@ function Phase-Restore {
             if (Test-Path $dest) {
                 $backup = "$dest.before-setup-$(Get-Date -Format 'yyyy-MM-dd_HHmm').bak"
                 Copy-Item $dest $backup
-                Log "backed up existing controls.cfg → $backup"
+                Log "backed up existing controls.cfg -> $backup"
             }
-            if ($DryRun) { Log "(dry run) would copy controls.cfg.expected → $dest" }
+            if ($DryRun) { Log "(dry run) would copy controls.cfg.expected -> $dest" }
             else { Copy-Item "$bundleDir\iRacing\controls.cfg.expected" $dest -Force; Log "iRacing controls.cfg installed" 'OK' }
         } else {
-            Log "iRacing Documents folder missing — launch iRacing once, then re-run -OnlyPhase restore" 'WARN'
+            Log "iRacing Documents folder missing -- launch iRacing once, then re-run -OnlyPhase restore" 'WARN'
         }
     }
 
-    # .bat scripts — copy to C:\Tools\<tool>\
+    # .bat scripts -- copy to C:\Tools\<tool>\
     if (Test-Path "$bundleDir\scripts") {
         $svvDir = Join-Path $toolsDir 'SoundVolumeView'
         $mmtDir = Join-Path $toolsDir 'MultiMonitorTool'
@@ -300,7 +309,7 @@ function Phase-Restore {
                     else { Join-Path $toolsDir $_.Name }
             $destDir = Split-Path $dest
             if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Force -Path $destDir | Out-Null }
-            if ($DryRun) { Log "(dry run) would copy $($_.Name) → $dest" }
+            if ($DryRun) { Log "(dry run) would copy $($_.Name) -> $dest" }
             else { Copy-Item $_.FullName $dest -Force; Log ".bat installed: $dest" 'OK' }
         }
     }
@@ -312,17 +321,17 @@ function Phase-RigConfig {
     $cfgPath = Join-Path $repoRoot 'rig-config.json'
     $examplePath = Join-Path $repoRoot 'rig-config.example.json'
     if (Test-Path $cfgPath) {
-        Log "rig-config.json already exists — leaving alone" 'OK'
+        Log "rig-config.json already exists -- leaving alone" 'OK'
         return
     }
     if (-not (Test-Path $examplePath)) {
-        Log "rig-config.example.json missing — cannot template" 'WARN'
+        Log "rig-config.example.json missing -- cannot template" 'WARN'
         return
     }
-    if ($DryRun) { Log "(dry run) would copy example → rig-config.json"; return }
+    if ($DryRun) { Log "(dry run) would copy example -> rig-config.json"; return }
     Copy-Item $examplePath $cfgPath
     Log "created rig-config.json from example" 'OK'
-    Log "→ open $cfgPath in your editor and fill in paths matching this PC" 'WARN'
+    Log "-> open $cfgPath in your editor and fill in paths matching this PC" 'WARN'
 }
 
 # ---------------------------------------------------------- 8. HEALTH CHECK
@@ -332,7 +341,7 @@ function Phase-HealthCheck {
     if (-not (Test-Path $hc)) { Log "health-check.ps1 missing" 'WARN'; return }
     if ($DryRun) { Log "(dry run) would run health-check.ps1 -Html"; return }
     & $hc -Html -Quiet
-    Log "health check complete — see C:\Logs\health-*.html" 'OK'
+    Log "health check complete -- see C:\Logs\health-*.html" 'OK'
 }
 
 # --------------------------------------------------------------- POSTAMBLE
@@ -342,17 +351,17 @@ function Print-FinalNotes {
 
 You're nearly done. A few things still need manual attention:
 
-  1. Open the Stream Deck app — re-auth Spotify, Discord, etc.
+  1. Open the Stream Deck app -- re-auth Spotify, Discord, etc.
      plugins (one click each, ~30 seconds).
   2. In Joystick Gremlin, open the imported profile and tick
      "Activate". Set to start with Windows.
-  3. In iRacing, verify your controls (Options → Controls). The
+  3. In iRacing, verify your controls (Options -> Controls). The
      bundle restored controls.cfg, but you should test each binding.
   4. Open rig-config.json and confirm paths match your installs.
      Especially the displays block (\\.\DISPLAY1/2/3).
   5. In the docs Verify tab, click "Re-verify now". Drifts that
-     are intentional → "Accept as baseline". Mismatches that
-     are NOT intentional → fix the underlying setting.
+     are intentional -> "Accept as baseline". Mismatches that
+     are NOT intentional -> fix the underlying setting.
   6. Build the tray binary:
         cd tray && go build -o bin\tray.exe .
         .\bin\tray.exe
@@ -365,9 +374,9 @@ Status tab shows the tray connected.
 }
 
 # =============================================================== MAIN
-Log "[setup] HarablaSetup install/restore — log: $logFile"
+Log "[setup] HarablaSetup install/restore -- log: $logFile"
 Log "[setup] repo: $repoRoot"
-if ($DryRun) { Log "[setup] DRY RUN — no changes will be made" 'WARN' }
+if ($DryRun) { Log "[setup] DRY RUN -- no changes will be made" 'WARN' }
 
 try {
     if (ShouldRun 'preflight')   { Phase-Preflight }

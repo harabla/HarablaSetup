@@ -1,4 +1,4 @@
-# health-check.ps1 — runnable rig health check.
+# health-check.ps1 -- runnable rig health check.
 # Outputs JSON to stdout (consumable by tray /api/health, or pipe to ConvertFrom-Json).
 # Pass -Html to also write an HTML report to <logs>/health-<timestamp>.html.
 #
@@ -19,17 +19,18 @@ $cfg = Get-RigConfig
 
 $checks = @{}
 
-# Tools — each path in cfg.tools must exist
+# Tools -- each path in cfg.tools must exist
 foreach ($key in $cfg.tools.PSObject.Properties.Name) {
     $checks["tool_$key"] = Test-CheckPath -Name "Tool: $key" -Path $cfg.tools.$key
 }
 
-# Games — UI / sim / exe paths
+# Games -- UI / sim / exe paths
 foreach ($gname in $cfg.games.PSObject.Properties.Name) {
     $g = $cfg.games.$gname
     if ($g.ui)  { $checks["game_${gname}_ui"]  = Test-CheckPath -Name "$gname (UI)"  -Path $g.ui }
     if ($g.sim) { $checks["game_${gname}_sim"] = Test-CheckPath -Name "$gname (sim)" -Path $g.sim }
-    if ($g.exe) { $checks["game_${gname}_exe"] = Test-CheckPath -Name "$gname (exe)" -Path $g.exe }
+    # exe field can be a string path or an array of process names (for the watcher); only check if it's a single path
+    if ($g.exe -and $g.exe -is [string]) { $checks["game_${gname}_exe"] = Test-CheckPath -Name "$gname (exe)" -Path $g.exe }
 }
 
 # VR
@@ -73,7 +74,7 @@ if (-not $Quiet) {
     Write-Host "[health] $ok ok, $warn warn, $fail fail" -ForegroundColor $(if ($fail -gt 0) { 'Red' } elseif ($warn -gt 0) { 'Yellow' } else { 'Green' })
 }
 
-# Always emit JSON to stdout — tray reads this
+# Always emit JSON to stdout -- tray reads this
 $checks | ConvertTo-Json -Depth 5
 
 # Optional HTML report
@@ -91,8 +92,8 @@ if ($Html) {
 <style>body{font-family:system-ui;background:#0a0d12;color:#e0e0e0;padding:24px;max-width:1200px;margin:auto}
 table{border-collapse:collapse;width:100%}th,td{padding:8px 12px;border-bottom:1px solid #222;text-align:left}
 th{color:#888;font-size:12px;text-transform:uppercase}</style></head><body>
-<h1>Rig health — $ts</h1>
-<p>$ok ok · $warn warn · $fail fail</p>
+<h1>Rig health -- $ts</h1>
+<p>$ok ok / $warn warn / $fail fail</p>
 <table><tr><th>Check</th><th>Status</th><th>Detail</th><th>Fix</th></tr>$rows</table>
 </body></html>
 "@ | Out-File -FilePath $out -Encoding utf8

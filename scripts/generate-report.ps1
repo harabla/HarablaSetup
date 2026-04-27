@@ -1,4 +1,4 @@
-# generate-report.ps1 — turn a session log dir into a single HTML report.
+# generate-report.ps1 -- turn a session log dir into a single HTML report.
 #
 # Reads:  hwinfo.csv, presentmon.csv, processes.csv, *.snapshot
 # Writes: report.html (self-contained, Chart.js from CDN)
@@ -73,7 +73,7 @@ $msJs = if ($msSlice.Count -gt 0) { ($msSlice | ForEach-Object { [string]$_ }) -
 $sessionName = Split-Path $LogDir -Leaf
 $html = @"
 <!doctype html><html><head><meta charset='utf-8'>
-<title>iRacing session report — $sessionName</title>
+<title>iRacing session report -- $sessionName</title>
 <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
 <style>
 body{font-family:system-ui;background:#0a0d12;color:#e0e0e0;padding:24px;max-width:1200px;margin:auto}
@@ -88,7 +88,7 @@ canvas{background:#1a1d22;border-radius:8px;padding:12px;margin:12px 0}
 code{background:#1a2030;padding:2px 6px;border-radius:3px;font-size:12px}
 ul{line-height:1.7}
 </style></head><body>
-<h1>iRacing session — $sessionName</h1>
+<h1>iRacing session -- $sessionName</h1>
 
 <div>
   <div class='metric'><div class='v'>$avgFps</div><div class='l'>Avg FPS</div></div>

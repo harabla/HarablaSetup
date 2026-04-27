@@ -1,4 +1,4 @@
-# bundle.ps1 — capture the current rig's portable config into bundle/
+# bundle.ps1 -- capture the current rig's portable config into bundle/
 # Runs on Windows (the rig). Writes everything to <repo>/bundle/.
 # Intended to run on the working PC after first-time manual setup, so the
 # captured exports can be committed and re-deployed on any future PC.
@@ -21,15 +21,15 @@ $repoRoot = (Resolve-Path "$PSScriptRoot\..").Path
 $bundleDir = Join-Path $repoRoot 'bundle'
 
 function Write-Section { param($t) Write-Host "`n=== $t ===" -ForegroundColor Cyan }
-function Write-Skip    { param($t) Write-Host "    skipped — $t" -ForegroundColor DarkGray }
-function Write-OK      { param($t) Write-Host "    ✓ $t" -ForegroundColor Green }
-function Write-Warn    { param($t) Write-Host "    ⚠ $t" -ForegroundColor Yellow }
+function Write-Skip    { param($t) Write-Host "    skipped -- $t" -ForegroundColor DarkGray }
+function Write-OK      { param($t) Write-Host "    [OK] $t" -ForegroundColor Green }
+function Write-Warn    { param($t) Write-Host "    [!] $t" -ForegroundColor Yellow }
 
 function Should-Run { param($name) return -not ($Skip -contains $name) }
 
 function Copy-Maybe {
     [CmdletBinding()] param([string]$From, [string]$To)
-    if ($DryRun) { Write-OK "would copy $From → $To"; return }
+    if ($DryRun) { Write-OK "would copy $From -> $To"; return }
     New-Item -ItemType Directory -Force -Path (Split-Path $To) | Out-Null
     Copy-Item -LiteralPath $From -Destination $To -Recurse -Force
 }
@@ -40,7 +40,7 @@ function Capture-StreamDeck {
     $sdRoot = Join-Path $env:APPDATA 'Elgato\StreamDeck'
     $profilesDir = Join-Path $sdRoot 'ProfilesV2'
     if (-not (Test-Path $profilesDir)) {
-        Write-Warn "no Stream Deck profiles found at $profilesDir — install Stream Deck app first"
+        Write-Warn "no Stream Deck profiles found at $profilesDir -- install Stream Deck app first"
         return
     }
 
@@ -62,7 +62,7 @@ function Capture-StreamDeck {
 
         # .streamDeckProfile is a zip of the profile folder.
         if ($DryRun) {
-            Write-OK "would export profile '$name' → $safe.streamDeckProfile"
+            Write-OK "would export profile '$name' -> $safe.streamDeckProfile"
             continue
         }
         if (Test-Path $outFile) { Remove-Item $outFile -Force }
@@ -71,7 +71,7 @@ function Capture-StreamDeck {
         $tmpZip = "$outFile.zip"
         Compress-Archive -Path "$($p.FullName)\*" -DestinationPath $tmpZip -Force
         Move-Item $tmpZip $outFile -Force
-        Write-OK "exported '$name' → $safe.streamDeckProfile"
+        Write-OK "exported '$name' -> $safe.streamDeckProfile"
     }
 
     # Plugin list
@@ -83,7 +83,7 @@ function Capture-StreamDeck {
             Write-OK "would write plugins.txt with $($plugins.Count) entries"
         } else {
             $plugins | Out-File $outFile -Encoding utf8
-            Write-OK "captured $($plugins.Count) plugins → plugins.txt"
+            Write-OK "captured $($plugins.Count) plugins -> plugins.txt"
         }
     } else {
         Write-Warn 'plugins dir missing'
@@ -108,7 +108,7 @@ function Capture-Gremlin {
         }
     }
     if (-not $found) {
-        Write-Warn 'no Gremlin XML profile found — save yours to %APPDATA%\Joystick Gremlin\fanatec-iracing.xml'
+        Write-Warn 'no Gremlin XML profile found -- save yours to %APPDATA%\Joystick Gremlin\fanatec-iracing.xml'
         return
     }
     Copy-Maybe -From $found.FullName -To (Join-Path $bundleDir 'Gremlin\fanatec-iracing.xml')
@@ -126,7 +126,7 @@ function Capture-IRacing {
     }
     $controls = Join-Path $iracingDocs 'controls.cfg'
     if (-not (Test-Path $controls)) {
-        Write-Warn "controls.cfg not found at $controls — launch iRacing once to generate"
+        Write-Warn "controls.cfg not found at $controls -- launch iRacing once to generate"
         return
     }
     Copy-Maybe -From $controls -To (Join-Path $bundleDir 'iRacing\controls.cfg.expected')
@@ -136,7 +136,7 @@ function Capture-IRacing {
 # ---------------------------------------------------------------- FanaLab profiles
 function Capture-FanaLab {
     Write-Section 'FanaLab profiles'
-    Write-Warn 'FanaLab exports manually — Settings → Export Profile, save 3 files into bundle\FanaLab\'
+    Write-Warn 'FanaLab exports manually -- Settings -> Export Profile, save 3 files into bundle\FanaLab\'
     Write-Warn '(this script does not automate FanaLab; it would require knowing the proprietary export format)'
 }
 
@@ -144,7 +144,7 @@ function Capture-FanaLab {
 function Generate-Scripts {
     Write-Section 'Generate display + audio .bat files from rig-config.json'
     try { $cfg = Get-RigConfig } catch {
-        Write-Warn "no rig-config.json — skipping (run from repo root)"
+        Write-Warn "no rig-config.json -- skipping (run from repo root)"
         return
     }
     $outDir = Join-Path $bundleDir 'scripts'
@@ -190,8 +190,8 @@ function Generate-Scripts {
 }
 
 # ---------------------------------------------------------------- Main
-Write-Host "[bundle] capturing rig configuration → $bundleDir" -ForegroundColor Cyan
-if ($DryRun) { Write-Host "[bundle] DRY RUN — no files will be written" -ForegroundColor Yellow }
+Write-Host "[bundle] capturing rig configuration -> $bundleDir" -ForegroundColor Cyan
+if ($DryRun) { Write-Host "[bundle] DRY RUN -- no files will be written" -ForegroundColor Yellow }
 
 if (Should-Run 'streamdeck') { Capture-StreamDeck } else { Write-Skip 'streamdeck' }
 if (Should-Run 'gremlin')    { Capture-Gremlin }    else { Write-Skip 'gremlin' }

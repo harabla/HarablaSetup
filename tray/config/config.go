@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 )
 
@@ -117,36 +118,53 @@ func Load(explicit string) (*Config, error) {
 // LoadedFrom returns the path the config was read from (or "<dev defaults>").
 func (c *Config) LoadedFrom() string { return c.loadedFrom }
 
+// expandEnv expands both $VAR / ${VAR} (Unix-style) and %VAR% (Windows-style)
+// environment variable references.
+var winEnvRe = regexp.MustCompile(`%([^%]+)%`)
+
+func expandEnv(s string) string {
+	// First expand Windows-style %VAR%
+	s = winEnvRe.ReplaceAllStringFunc(s, func(m string) string {
+		name := m[1 : len(m)-1]
+		if v, ok := os.LookupEnv(name); ok {
+			return v
+		}
+		return m // leave unresolved vars as-is
+	})
+	// Then expand Unix-style $VAR / ${VAR}
+	return os.ExpandEnv(s)
+}
+
 // expand walks string fields and replaces %ENVVAR% on Windows. No-op elsewhere.
 func (c *Config) expand() {
 	if runtime.GOOS != "windows" {
 		return
 	}
 	for k, v := range c.Tools {
-		c.Tools[k] = os.ExpandEnv(v)
+		c.Tools[k] = expandEnv(v)
 	}
 	for k, g := range c.Games {
-		g.UI = os.ExpandEnv(g.UI)
-		g.Sim = os.ExpandEnv(g.Sim)
+		g.UI = expandEnv(g.UI)
+		g.Sim = expandEnv(g.Sim)
 		// Exe is interface{} (string or []string) — leave as-is; the watcher
 		// normalises when reading.
-		g.Documents = os.ExpandEnv(g.Documents)
+		g.Documents = expandEnv(g.Documents)
 		for i, s := range g.Settings {
-			g.Settings[i] = os.ExpandEnv(s)
+			g.Settings[i] = expandEnv(s)
 		}
 		for i := range g.SettingsFiles {
-			g.SettingsFiles[i].Path = os.ExpandEnv(g.SettingsFiles[i].Path)
+			g.SettingsFiles[i].Path = expandEnv(g.SettingsFiles[i].Path)
 		}
 		c.Games[k] = g
 	}
 	for i := range c.System.SettingsFiles {
-		c.System.SettingsFiles[i].Path = os.ExpandEnv(c.System.SettingsFiles[i].Path)
+		c.System.SettingsFiles[i].Path = expandEnv(c.System.SettingsFiles[i].Path)
 	}
-	c.VR.OpenXRToolkit = os.ExpandEnv(c.VR.OpenXRToolkit)
-	c.VR.VirtualDesktop = os.ExpandEnv(c.VR.VirtualDesktop)
-	c.Logs = os.ExpandEnv(c.Logs)
-	c.Deck.AppPath = os.ExpandEnv(c.Deck.AppPath)
-	c.Deck.ProfilesDir = os.ExpandEnv(c.Deck.ProfilesDir)
+	c.VR.OpenXRToolkit = expandEnv(c.VR.OpenXRToolkit)
+	c.VR.VirtualDesktop = expandEnv(c.VR.VirtualDesktop)
+	c.Logs = expandEnv(c.Logs)
+	c.Deck.AppPath = expandEnv(c.Deck.AppPath)
+	c.Deck.ProfilesDir = expandEnv(c.Deck.ProfilesDir)
 }
 
 func devDefaults() *Config {

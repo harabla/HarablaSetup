@@ -1,4 +1,4 @@
-# monitor-iracing.ps1 — wrap an iRacing session with full telemetry capture.
+# monitor-iracing.ps1 -- wrap an iRacing session with full telemetry capture.
 #
 # Snapshots iRacing graphics .ini files + OpenXR Toolkit config + recent
 # setups. Starts HWiNFO64 (CSV log), PresentMon (frame data), and a process
@@ -51,7 +51,7 @@ $hwinfo = Expand-EnvPath $cfg.tools.hwinfo
 if ($hwinfo -and (Test-Path $hwinfo)) {
     Start-Process $hwinfo -ArgumentList "/log=$logDir\hwinfo.csv" -WindowStyle Minimized
 } else {
-    Write-Warning "HWiNFO64 not found at $hwinfo — skipping sensor log"
+    Write-Warning "HWiNFO64 not found at $hwinfo -- skipping sensor log"
 }
 
 # ---------- 3. Start PresentMon ----------
@@ -61,7 +61,7 @@ if ($presentMon -and (Test-Path $presentMon)) {
       -ArgumentList "-process_name iRacingSim64DX11.exe -output_file `"$logDir\presentmon.csv`" -terminate_on_proc_exit -no_top" `
       -WindowStyle Hidden
 } else {
-    Write-Warning "PresentMon not found at $presentMon — skipping frame log"
+    Write-Warning "PresentMon not found at $presentMon -- skipping frame log"
 }
 
 # ---------- 4. Background process poller (5s interval) ----------
@@ -87,7 +87,7 @@ $pollerJob = Start-Job -ScriptBlock {
 $alreadyRunning = (Get-Process iRacingSim64DX11 -ErrorAction SilentlyContinue) -or
                   (Get-Process iRacingUI       -ErrorAction SilentlyContinue)
 if ($alreadyRunning) {
-    Write-Host "[monitor] iRacing already running — attaching" -ForegroundColor Cyan
+    Write-Host "[monitor] iRacing already running -- attaching" -ForegroundColor Cyan
 } else {
     $iracingUi = Expand-EnvPath $cfg.games.iRacing.ui
     if (-not (Test-Path $iracingUi)) {
